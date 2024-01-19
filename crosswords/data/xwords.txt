@@ -1,0 +1,14 @@
+wordFont=Belle Allure GS Gras
+wordSize=14
+isBZH=true
+kanañ=kanan.png
+kaoter=kaoter.jpg
+kibell=kibell.jpg
+labous=labous.webp
+mintin=mintin.jpg
+pezh-aour=pezh-aour.jpg
+roue=roue.jpg
+toenn=toenn.png
+abc'hd=fulorin.jpg
+dchba=fulorin.jpg
+
