@@ -4,6 +4,8 @@ import logging
 import csv
 import traceback
 import re
+import os
+from pathlib import Path
 
 
 class CsvCreator(object):
@@ -14,28 +16,53 @@ class CsvCreator(object):
         self.imagesFiles = []
 
     def findImagesFromPath(self) :
-         self.imagePath = scribus.fileDialog("Select image directory","","",False,False,True)
-
+        self.imagePath = scribus.fileDialog("Select image directory","","",False,False,True)
+        self.imagesFiles = []
         for f in os.listdir(self.imagePath):
-            if f.lower().endswith(valid_images):
-                self.imagesFiles.append(os.path.join(path,f))
+            for ext in self.validImages :
+                if f.lower().endswith(ext):
+                    self.imagesFiles.append(os.path.join(self.imagePath,f))
 
     def createCsvFile(self, headers, imageIndex) :
-        inputFileName = scribus.fileDialog("Select destination CSV filet", "*.csv", "", False, True, False)
+        self.findImagesFromPath()
+        inputFileName = scribus.fileDialog('Save as CSV file',  "*.csv", 'flashcards.csv', issave=True)
         if inputFileName != "":
-            row = [""] * len(headers)
+
+            indexUpper = None
+            indexFR = None
+            for header in headers :
+                if header.isupper() :
+                    indexUpper = headers.index(header)
+                elif "FR" in header :
+                    indexFR = headers.index(header)
+
             try:
                 with open(inputFileName, 'w', encoding='UTF8', newline='') as csvfile:
-                    csvWriter = csv.writer(csvfile, delimiter='; ',
+                    csvWriter = csv.writer(csvfile, delimiter=';',
                                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
                     csvWriter.writerow(headers)
+                    scribus.progressReset()
+                    scribus.progressTotal(len(self.imagesFiles))
+                    i=1
                     for image in self.imagesFiles :
+                        scribus.progressSet(i)
+                        i+=1
+                        filebasename =Path(image).stem.replace("-"," ").replace("_"," ").lower()
+                        row = [filebasename] * len(headers)
+                        if indexUpper != None :
+                            row[indexUpper] = filebasename.upper()
+                        if indexFR != None :
+                            row[indexFR] = " "
+
                         row[imageIndex]=image
                         csvWriter.writerow(row)
+                    scribus.progressReset()
 
-             except Exception as e :
-                 scribus.messageBox("processCrosswords", "Error: %s"%e)
-                 logging.exception(e)
+            except Exception as e :
+                scribus.messageBox("processCrosswords", "Error: %s"%e)
+                logging.exception(e)
+                scribus.progressReset()
+        scribus.messageBox("processCrosswords",f"File created : {os.path.abspath(inputFileName)}")
         return inputFileName
 
 class ImagierScribus(object):
@@ -47,7 +74,7 @@ class ImagierScribus(object):
         self.itemsInPage=0
         self.currentPage=1
 
-        scribus.gotoPage(currentPage)
+        scribus.gotoPage(self.currentPage)
         objList = scribus.getPageItems()
 
         for item in objList:
@@ -62,7 +89,10 @@ class ImagierScribus(object):
         self.cardsize = scribus.getSize(self.cardName)
 
     def initFromCardModel(self) :
-        scribus.selectObject(self.cardName)
+        scribus.deselectAll()
+        newObjList=scribus.duplicateObjects([self.cardName])
+        scribus.selectObject(newObjList[0])
+        scribus.unGroupObject()
         childObjectCount = scribus.selectionCount()
         imageHeader = None
         for x in range(0, childObjectCount):
@@ -76,22 +106,27 @@ class ImagierScribus(object):
 
                 if result != None :
                     text = result.group(1)
-                    self.headers.append(text)
+                    if text not in self.headers :
+                        self.headers.append(text)
 
             elif scribus.getObjectType(element) == "ImageFrame" :
                 filename = scribus.getImageFile(element)
                 result = re.search('%VAR_(\w+)%', filename)
                 if result != None :
                     imageHeader =result.group(1)
+        objName=scribus.groupObjects()
+        scribus.deleteObject(objName)
+        scribus.deselectAll()
         if imageHeader==None :
             scribus.messageBox('Error', 'No image template found in model')
             sys.exit(1)
         self.headers.append(imageHeader)
 
-    def checkHeader(self, header) :
-        if self.headers != header :
-            scribus.messageBox('Error', 'Headers from CSV file is not compatible with model card')
-            sys.exit(1)
+    def checkHeader(self, headers) :
+        for header in self.headers :
+            if header not in headers :
+                scribus.messageBox('Error', f"Header {header} from CSV file is not found in model card {self.headers}")
+                sys.exit(1)
 
     def createCard(self, cardData, x, y) :
         scribus.copyObjects([self.cardName])
@@ -120,9 +155,9 @@ class ImagierScribus(object):
                         scribus.insertText(cardData[index], -1, element)
                         scribus.selectText(0,textLength,element)
                         scribus.deleteText(element)
-                        element
-                 except Exception as e :
+                except Exception as e :
                     scribus.messageBox("error", f" {e} for item {text}")
+
             elif scribus.getObjectType(element) == "ImageFrame" :
                 filename = scribus.getImageFile(element)
                 result = re.search('%VAR_(\w+)%', filename)
@@ -136,16 +171,22 @@ class ImagierScribus(object):
                     scribus.messageBox("error", f" {e} for item {filename}")
 
         scribus.groupObjects()
+        scribus.deselectAll()
 
 
     def createCardsList(self, data) :
+        scribus.progressReset()
+        scribus.progressTotal(len(data))
+        i=1
         for dataItem in data :
+            scribus.progressSet(i)
+            i+=1
             if self.itemsInPage >= 4 :
                 self.itemsInPage = 0
                 scribus.newPage(-1)
                 self.currentPage=self.currentPage+1
                 scribus.gotoPage(self.currentPage)
-             itemsInPage = itemsInPage+1
+            self.itemsInPage = self.itemsInPage+1
             x=0
             y=0
             match self.itemsInPage:
@@ -162,6 +203,7 @@ class ImagierScribus(object):
                     x=self.cardsize[0]
                     y=self.cardsize[1]
             self.createCard( dataItem, x, y)
+        scribus.progressReset()
 
     def processCsvDataFile(self) :
         csvData = []
@@ -170,17 +212,12 @@ class ImagierScribus(object):
             try:
                 # Load file contents
                 with open(csvfileName, newline='', encoding='utf-8') as csvfile:
-                    reader = csv.reader(csvfile)
-                    line_count = 0
-                    headers = None
+                    reader = csv.DictReader(csvfile, delimiter=';', quoting=csv.QUOTE_NONE)
+                    self.checkHeader( reader.fieldnames)
                     for row in reader:
-                        if line_count == 0:
-                            headers = row
-                            self.checkHeader(headers)
-                            line_count += 1
-                        else:
-                            csvData.append(row)
-                            line_count += 1
+                        filteredRow = [ row[key] for key in row.keys() if key in self.headers ]
+                        csvData.append(row)
+                self.createCardsList(csvData)
             except Exception as e :
                 scribus.messageBox("CSV", "Error processing file %s"%e)
                 sys.exit(1)
@@ -194,7 +231,8 @@ if scribus.haveDoc():
     imagier.initFromCardModel()
 
     action = scribus.valueDialog('Create or select CSV file ?','0 = create\n1 = select','0')
-    if action==0 :
+
+    if action=='0' :
         csvCreator = CsvCreator()
         csvCreator.createCsvFile( imagier.headers, len(imagier.headers)-1)
     else :
