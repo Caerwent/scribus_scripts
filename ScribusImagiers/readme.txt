@@ -1,11 +1,10 @@
  
-- créer un répertoire pour l'imagier et y copier les fichiers "modele_carte_imagier.sla" et le script "RecupererListeFichier.sh"
-- y créer un répertoire "img" et y copier les images
-- dans le répertoire imagier, lancer le script "RecupererListeFichier.sh" afin de créer le fichier csv
-- remplir le fichier csv
-- ouvrir le fichier "modele_carte_imagier.sla" avec Scribus
-- dans le menu "script" choisir "démarrer un script" et prendre le script "imagier_scribus.py"
-- sélectionner le fichier csv de l'imagier dans la boîte de dialogue
-- dans le menu "script" choisir "démarrer un script" et prendre le script "SetImagePaths.py"
-- sélectionner le dossier des images de l'imagier dans la boîte de dialogue
-- dans le menu "script" choisir "démarrer un script" et prendre le script "center_all_images.py"
+- éléments de départ : un dossier avec des images et une copie du fichier "modele_carte_imagier.sla"
+- ouvrir la copie du fichier "modele_carte_imagier.sla" et lancer le script "imagier_scribus.py"
+- dans la boîte de dialog, choisir 0 (création d'un fichier CSV)
+- choisir le dossier contenant les images
+- choisir le nom du fichier CSV à créer
+- le script remplira automatiquement le fichier CSV en utilisant les variable du modèle et en complétant les colonnes avec le nom des images
+- compléter le fichier CSV
+- relancer le script et choisir 1 (charger un fichier CSV) et choisir le fichier CSV
+
