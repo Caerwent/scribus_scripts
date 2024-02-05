@@ -188,7 +188,7 @@ class Letters(object):
 
 
     def drawRefWord(self, x, y, dataRow) :
-        wordLen = dataRow[self.indexWord][self.indexWordFormatted]
+        wordLen = len(dataRow[self.indexWord][self.indexWordFormatted])
         tableWidth = wordLen*self.letterCellWidth
         imgMinWidth = 2*self.letterCellWidth
         imgMaxWidth = 3.5*self.letterCellWidth
@@ -217,14 +217,26 @@ class Letters(object):
         scribus.setTextVerticalAlignment(scribus.ALIGNV_CENTERED,textbox)
         scribus.deselectAll()
 
-        img = scribus.createImage(x, y, imgWidth, tableHeight-self.letterCellHeight)
+        if dataRow[self.indexImage]:
+            img = scribus.createImage(x, y, imgWidth, tableHeight-self.letterCellHeight)
+            scribus.loadImage(dataRow[self.indexImage], img)
+            self.resizeImageFrameObj(img)
+            objectlist.append(img)
 
-        if self.imagePath !=None :
-            scribus.loadImage(os.path.join(self.imagePath,imgFile), img)
-        else :
-            scribus.loadImage(imgFile, img)
+        letterIdx=0
+        xstart = x+imgWidth
+        for l in range(wordLen) :
+            xl = xstart+l*self.letterCellWidth
+            line = scribus.createLine((xl,y,xl,tableHeight)
+            scribus.setLineColor(self.defaultColor, line)
+            objectlist.append(line)
+            for r in range(self.mode+2) :
+                yl=y+r*self.letterCellHeight
+                line = scribus.createLine(xl, yl, xl+self.letterCellWidth, yl)
+                objectlist.append(line)
 
-        self.resizeImageFrameObj(img)
+
+
 
         scribus.groupObjects(objectlist)
 
