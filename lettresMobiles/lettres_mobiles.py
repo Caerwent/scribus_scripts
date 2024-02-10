@@ -66,8 +66,8 @@ class Letters(object):
 
         self.letterCellWidth = 15
         self.letterCellHeight = 12
-        self.charScissors = "✂"
-        self.charPencil = "🖉"
+        self.charScissors = u"\u2702" #"✂"
+        self.charPencil = u"\u270e" #"🖉"
         self.hasScript = False
         self.isBZH = True
 
@@ -81,21 +81,25 @@ class Letters(object):
         self.cStyleLetterUpper = "char_style_letter_upper"
         self.cStyleLetterLower = "char_style_letter_lower"
         self.cStyleLetterScript = "char_style_letter_script"
+        self.cStyleLetterSymbols = "char_style_letter_symbols"
         # paragraph styles
         self.pStyleWordRef = "char_style_word_ref"
         self.pStyleLetterUpper = "char_style_letter_upper"
         self.pStyleLetterLower = "char_style_letter_lower"
         self.pStyleLetterScript = "char_style_letter_script"
+        self.pStyleLetterSymbols = "char_style_letter_symbols"
 
-        self.cFontRef = "Comic Sans MS"
+        self.cFontRef = "Comic Sans MS Regular"
         self.cFont = "Arial Bold"
-        self.cFontLetter = "ScriptEcole2"
+        self.cFontLetter = "Script Ecole 2 Regular"
+        self.cFontSymbols = "DejaVu Sans Bold"
 
         self.colorIcon = "colorIcon"
         self.defaultColor = "defaultColor"
-        self.colorH = "color1"
-        self.colorV = "color2"
-
+        self.color1 = "color1"
+        self.color2 = "color2"
+        #fonts = scribus.getFontNames()
+        #scribus.messageBox("processCrosswords", f"Fonts: { [elt for elt in fonts if elt.startswith('Deja')  ] }")
         scribus.defineColorRGB(self.color1, 0, 0, 255)
         scribus.defineColorRGB(self.color2, 0, 255, 0)
         scribus.defineColorRGB(self.colorIcon, 255, 0, 0)
@@ -105,16 +109,19 @@ class Letters(object):
 
         self.csvData = []
         self.bzh_chars = [["C'H", "C"],["CH", "Q"]]
+        self.nbPlayers = 0
 
         scribus.createCharStyle(name=self.cStyleWordRef,font=self.cFontRef, fontsize=20.0)
         scribus.createCharStyle(name=self.cStyleLetterUpper,font=self.cFontLetter, fontsize=26.0)
         scribus.createCharStyle(name=self.cStyleLetterLower,font=self.cFontLetter, fontsize=26.0)
         scribus.createCharStyle(name=self.cStyleLetterScript,font=self.cFontLetter, fontsize=18.0)
+        scribus.createCharStyle(name=self.cStyleLetterSymbols,font=self.cFontSymbols, fontsize=18.0)
 
         scribus.createParagraphStyle(name=self.pStyleWordRef,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleWordRef)
         scribus.createParagraphStyle(name=self.pStyleLetterUpper,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleLetterUpper)
         scribus.createParagraphStyle(name=self.pStyleLetterLower,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleLetterLower)
         scribus.createParagraphStyle(name=self.pStyleLetterScript,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleLetterScript)
+        scribus.createParagraphStyle(name=self.pStyleLetterSymbols,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleLetterSymbols)
 
 
 
@@ -140,7 +147,7 @@ class Letters(object):
 
 
 
-    def _check_bzh(word):
+    def _check_bzh(self, word):
         formatted = word.replace(self.bzh_chars[0][0], self.bzh_chars[0][1])
         formatted = formatted.replace(self.bzh_chars[1][0], self.bzh_chars[1][1])
         return formatted
@@ -171,6 +178,8 @@ class Letters(object):
         csvfileName = scribus.fileDialog("Open CSV data file", "*.csv")
         if csvfileName != "":
             try:
+                resp=scribus.messageBox("Langue", "Gérer les lettres pour le Breton ?",     icon=scribus.ICON_NONE, button1=scribus.BUTTON_YES,     button2=scribus.BUTTON_NO)
+                self.isBZH = resp==scribus.BUTTON_YES
                 # Load file contents
                 with open(csvfileName, newline='', encoding='utf-8') as csvfile:
                     reader = csv.DictReader(csvfile, delimiter=';', quoting=csv.QUOTE_NONE)
@@ -179,13 +188,24 @@ class Letters(object):
                         filteredRow = [ row[key] for key in row.keys() if key in self.headers ]
                         if(self.isBZH) :
                             filteredRow[self.indexWord] = [self._check_bzh(filteredRow[self.indexWord]), filteredRow[self.indexWord]]
-                        else
+                        else :
                             filteredRow[self.indexWord] = [filteredRow[self.indexWord], filteredRow[self.indexWord]]
                         self.csvData.append(filteredRow)
             except Exception as e :
                 scribus.messageBox("CSV", "Error processing file %s"%e)
                 sys.exit(1)
 
+    def createText(self, x, y, width, height, text, paragraphStyle, color, isVerticalAlign) :
+        textbox = scribus.createText(x, y, width,height)
+        scribus.setText(text, textbox)
+        scribus.setTextColor( color, textbox)
+        scribus.deselectAll()
+        scribus.selectObject(textbox)
+        scribus.setParagraphStyle(paragraphStyle, textbox)
+        if isVerticalAlign:
+            scribus.setTextVerticalAlignment(scribus.ALIGNV_CENTERED,textbox)
+        scribus.deselectAll()
+        return textbox
 
     def drawRefWord(self, x, y, dataRow) :
         wordLen = len(dataRow[self.indexWord][self.indexWordFormatted])
@@ -195,7 +215,8 @@ class Letters(object):
         maxWordsWidth = self.pageWidth-x-self.marginEnd
         tableHeight = (self.mode+1)*self.letterCellHeight
 
-        if maxWordsWidth-(tableWidth) > imgMinWidth :
+        #scribus.messageBox("DEBUG", f"x={x} wordLen={wordLen} letterCellWidth={self.letterCellWidth} tableWidth={tableWidth} maxWordsWidth={maxWordsWidth}")
+        if maxWordsWidth-(tableWidth) < imgMinWidth :
             scribus.messageBox("Error", f"Word {dataRow[self.indexWord][self.indexWord]} is too long")
             sys.exit(1)
 
@@ -207,15 +228,16 @@ class Letters(object):
         objectlist=[]
         rect = scribus.createRect(x, y, imgWidth+tableWidth, tableHeight)
         objectlist.append(rect)
-        textbox = scribus.createText(x, y+tableHeight-self.letterCellHeight, imgWidth, self.letterCellHeight)
+        textbox = self.createText( x=x,
+                                  y=y+tableHeight-self.letterCellHeight,
+                                  width=imgWidth,
+                                  height=self.letterCellHeight,
+                                  text=dataRow[self.indexWord][self.indexWord],
+                                  paragraphStyle=self.pStyleWordRef,
+                                  color=self.defaultColor,
+                                  isVerticalAlign=True)
         objectlist.append(textbox)
-        scribus.setText(dataRow[self.indexWord][self.indexWord])
-        scribus.setTextColor( self.defaultColor, textbox)
-        scribus.deselectAll()
-        scribus.selectObject(textbox)
-        scribus.setParagraphStyle(self.pStyleWordRef, textbox)
-        scribus.setTextVerticalAlignment(scribus.ALIGNV_CENTERED,textbox)
-        scribus.deselectAll()
+
 
         if dataRow[self.indexImage]:
             img = scribus.createImage(x, y, imgWidth, tableHeight-self.letterCellHeight)
@@ -225,23 +247,97 @@ class Letters(object):
 
         letterIdx=0
         xstart = x+imgWidth
-        for l in range(wordLen) :
+        xl=0
+        for l in range(wordLen+1) :
             xl = xstart+l*self.letterCellWidth
-            line = scribus.createLine((xl,y,xl,tableHeight)
+            line = scribus.createLine(xl,y,xl,y+tableHeight)
             scribus.setLineColor(self.defaultColor, line)
             objectlist.append(line)
             for r in range(self.mode+2) :
                 yl=y+r*self.letterCellHeight
                 line = scribus.createLine(xl, yl, xl+self.letterCellWidth, yl)
                 objectlist.append(line)
-
-
-
-
+            if l==0 :
+                textbox = self.createText( x=xl,
+                                  y=y,
+                                  width=self.letterCellWidth,
+                                  height=self.letterCellHeight,
+                                  text=self.charPencil,
+                                  paragraphStyle=self.pStyleLetterSymbols,
+                                  color=self.colorIcon,
+                                  isVerticalAlign=True)
+                objectlist.append(textbox)
+                textbox = self.createText( x=xl,
+                                  y=y+self.letterCellHeight,
+                                  width=self.letterCellWidth,
+                                  height=self.letterCellHeight,
+                                  text=self.charScissors,
+                                  paragraphStyle=self.pStyleLetterSymbols,
+                                  color=self.colorIcon,
+                                  isVerticalAlign=True)
+                textbox = self.createText( x=xl,
+                                  y=y+2*self.letterCellHeight,
+                                  width=self.letterCellWidth,
+                                  height=self.letterCellHeight,
+                                  text=self.charScissors,
+                                  paragraphStyle=self.pStyleLetterSymbols,
+                                  color=self.colorIcon,
+                                  isVerticalAlign=True)
+                objectlist.append(textbox)
+        xl = xstart+(wordLen+1)*self.letterCellWidth
+        line = scribus.createLine(xl,y,xl,y+tableHeight)
+        scribus.setLineColor(self.defaultColor, line)
+        objectlist.append(line)
         scribus.groupObjects(objectlist)
+        return tableHeight
 
     def processData(self) :
-        self.mode = scribus.valueDialog('Selection du mode','1 = collage capitales\n2 = collage capitales et minuscules\n3 = collage minuscules et cursif','0')
+        scribus.selectObject("ImageAlbum")
+        imageAlbum = scribus.getSelectedObject(0)
+        scribus.deselectAll()
+        if imageAlbum == None :
+            scribus.messageBox('Error', "Objet ImageAlbum non trouvé")
+            sys.exit(1)
+        x, y = scribus.getPosition("ImageAlbum")
+        w, h =scribus.getSize("ImageAlbum")
+
+        y +=h
+        self.mode = int(scribus.valueDialog('Selection du mode','1 = collage capitales\n2 = collage capitales et minuscules\n3 = collage minuscules et cursif','0'))
+        self.nbPlayers = int(scribus.valueDialog("Selection du nombre d'élèves",'Saisir un nombre > 0','0'))
+        if self.nbPlayers <=0 :
+            scribus.messageBox('Error', "Nombre d'élèves invalide")
+            sys.exit(1)
+
+        perPageDataList = []
+        currentPageDataList = []
+        currentDataPage = -1
+
+        for data in self.csvData :
+            if currentDataPage==-1:
+                currentDataPage = data[self.indexPage]
+            if currentDataPage != data[self.indexPage] :
+                   perPageDataList.append(currentPageDataList)
+                   currentPageDataList = []
+                   currentDataPage = data[self.indexPage]
+            currentPageDataList.append(data)
+
+        perPageDataList.append(currentPageDataList)
+        perPageDataList.sort(key=lambda element: element[0][self.indexPage])
+
+        for perPageData in perPageDataList :
+            hSpace = 10
+            if len(perPageData) > 2 :
+                hSpace = 3
+            yOffset=hSpace
+            blockHeight=0
+            for data in perPageData :
+                blockHeight=self.drawRefWord(x, y+yOffset, data)
+                yOffset += blockHeight+hSpace
+            scribus.newPage(-1, "grille_mots_ecole")
+            self.currentPage=self.currentPage+1
+            scribus.gotoPage(self.currentPage)
+
+
 
 
 
@@ -256,8 +352,9 @@ if scribus.haveDoc():
         csvCreator.createCsvFile( letters.headers)
     else :
         pageunits = scribus.getUnit()
-        scribus.setUnits(scribus.UNIT_MILLIMETERS)
+        scribus.setUnit(scribus.UNIT_MILLIMETERS)
         letters.loadCsvDataFile()
+        letters.processData()
         scribus.docChanged(1)
         scribus.setRedraw(True)
         scribus.redrawAll()
