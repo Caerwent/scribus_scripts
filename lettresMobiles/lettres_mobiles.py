@@ -259,7 +259,7 @@ class Letters(object):
                                   y=y+tableHeight-self.letterCellHeight,
                                   width=imgWidth,
                                   height=self.letterCellHeight,
-                                  text=dataRow[self.indexWord][self.indexWord],#.capitalize(),
+                                  text=dataRow[self.indexWord][self.indexWord].capitalize(),
                                   paragraphStyle=self.pStyleWordRef,
                                   color=self.defaultColor,
                                   isVerticalAlign=True)
@@ -321,11 +321,13 @@ class Letters(object):
     def drawLettersBlock(self, objsList, x, y, nbRows, nbCols, letters, color, paragraphStyle) :
         for r in range(nbRows) :
             for c in range(nbCols) :
-                 newrectangle = scribus.createRect(x,y,self.letterCellWidth,self.letterCellHeight)
+                 xi=x+c*self.letterCellWidth
+                 yi=y+r*self.letterCellHeight
+                 newrectangle = scribus.createRect(xi,yi,self.letterCellWidth,self.letterCellHeight)
                  scribus.setLineColor(color, newrectangle)
                  objsList.append(newrectangle)
-                 textbox = self.createText( x=x+c*self.letterCellWidth,
-                                  y=y+r*self.letterCellHeight,
+                 textbox = self.createText( x=xi,
+                                  y=yi,
                                   width=self.letterCellWidth,
                                   height=self.letterCellHeight,
                                   text=letters[r*nbCols+c],
@@ -376,10 +378,9 @@ class Letters(object):
             return [nbCols, nbRows, 0]
 
     def drawLettersForWords(self, y, label, wordsLetters) :
-        scribus.messageBox("DEBUG", f"drawLettersForWords")
         maxHeightSpaces=self.pageHeight-y- self.marginTop -self.marginBottom
         maxWidthSpace = self.pageWidth - self.marginStart - self.marginEnd
-        yOffset = self.marginTop
+        yOffset = y
         xOffset = self.marginStart
         N = self.nbPlayers * self.mode
          # 1 : mot sous l'image + tableau ligne écriture, ligne collage capitales
@@ -391,42 +392,51 @@ class Letters(object):
         if self.mode == 3 :
             paragraphStyles = [self.pStyleLetterLower, self.pStyleLetterScript]
 
-        currentColor = self.defaultColor
+        colors = [self.defaultColor, self.color1, self.color2]
+        colorLen = 3
+        currentcolorIdx = 0
         objsList = []
-        # for each words sequence
-        for currentWordsLetters in wordsLetters :
-            blockArrangement = self.getBestArrangement(yOffset, currentWordsLetters, N)
-            scribus.messageBox("DEBUG", f"getBestArrangement={blockArrangement}")
-            nbBlocksPerLine = math.floor(maxWidthSpace / blockArrangement[0]*self.letterCellWidth)
-            nbBlocksLines = math.floor(N/nbBlocksPerLine)
-            # draw letters block for each player and each mode
-            n=1
-            for p in range(self.nbPlayers) :
-                for m in range(self.mode-1) :
-                    self.drawLettersBlock( objsList=objsList, x=xOffset, y=yOffset, nbRows=blockArrangement[0], nbCols=blockArrangement[1], letters=currentWordsLetters, color=currentColor, paragraphStyle=paragraphStyles[m])
-                    n+=1
-                    if n<nbBlocksPerLine :
-                        xOffset += blockArrangement[1]*self.letterCellWidth
-                    else :
-                        xOffset = self.marginStart
-                        yOffset += blockArrangement[0]*self.letterCellHeight
+        blockArrangement = self.getBestArrangement(yOffset, wordsLetters, N)
+        nbBlocksPerLine = math.floor(maxWidthSpace / (blockArrangement[0]*self.letterCellWidth))
+        blockHeight = blockArrangement[1]*self.letterCellHeight
+        #scribus.messageBox("DEBUG", f"BestArrangement = {blockArrangement} maxHeightSpaces={maxHeightSpaces} blockHeight={blockHeight} ")
+        # draw letters block for each player and each mode
+        n=1
+        for p in range(self.nbPlayers) :
+            for m in range(self.mode-1) :
 
-                    if maxHeightSpaces < yOffset+ blockArrangement[0]*self.letterCellHeight :
-                        scribus.newPage(-1)
-                        self.currentPage=self.currentPage+1
-                        scribus.gotoPage(self.currentPage)
-                        yOffset = self.marginTop
-                        xOffset = self.marginStart
+                if maxHeightSpaces < yOffset+ blockHeight :
+                    #scribus.messageBox("DEBUG", f"add page maxHeightSpaces={maxHeightSpaces} yOffset={yOffset} blockHeight={blockHeight} ")
+                    scribus.newPage(-1)
+                    self.currentPage=self.currentPage+1
+                    scribus.gotoPage(self.currentPage)
+                    yOffset = self.marginTop
+                    xOffset = self.marginStart
+                    maxHeightSpaces=self.pageHeight-yOffset- self.marginTop -self.marginBottom
+                    n=0
+                if n<nbBlocksPerLine :
+                    xOffset += blockArrangement[0]*self.letterCellWidth
+                else :
+                    n=1
+                    xOffset = self.marginStart
+                    yOffset += blockHeight
+                self.drawLettersBlock( objsList=objsList, x=xOffset, y=yOffset, nbRows=blockArrangement[1], nbCols=blockArrangement[0], letters=wordsLetters, color=colors[currentcolorIdx], paragraphStyle=paragraphStyles[m])
+                n+=1
+                currentcolorIdx+=1
+                if currentcolorIdx >= 0 :
+                    currentcolorIdx = 0
 
-                    scribus.groupObjects(objsList)
-                    objsList = []
+
+
+
+                scribus.groupObjects(objsList)
+                objsList = []
         return yOffset
 
 
 
 
     def processLetters(self) :
-        scribus.messageBox("DEBUG", f"processLetters")
         currentDataPage = -1
 
         scribus.progressReset()
@@ -435,6 +445,7 @@ class Letters(object):
         wordsAndLetters = []
         letters = []
         label = ""
+        sep=""
         for data in self.csvData :
             scribus.progressSet(i)
             i+=1
@@ -445,12 +456,17 @@ class Letters(object):
                  wordsAndLetters.append([label, letters])
                  letters = []
                  label = ""
+                 sep=""
                  currentDataPage = data[self.indexPage]
-            label+=data[self.indexWord][self.indexWord]
+            label+=sep+data[self.indexWord][self.indexWord]
+            sep=" "
+
             if self.isBZH :
-                letters.append([self._uncheck_bzh(x) for x in data[self.indexWordFormatted]])
+                for x in data[self.indexWord][self.indexWordFormatted] :
+                    letters.append(self._uncheck_bzh(x) )
             else :
-                letters.append([x for x in data[self.indexWordFormatted]])
+                for x in data[self.indexWord][self.indexWordFormatted] :
+                    letters.append(x )
 
         wordsAndLetters.append([label, letters])
         scribus.progressReset()
@@ -462,6 +478,15 @@ class Letters(object):
         yOffset = self.marginTop
 
         for word in wordsAndLetters :
+            textbox = self.createText( x=self.marginStart,
+                                  y=yOffset,
+                                  width=self.pageWidth-self.marginStart-self.marginEnd,
+                                  height=self.letterCellHeight,
+                                  text=word[0],
+                                  paragraphStyle=self.pStyleWordRef,
+                                  color=self.defaultColor,
+                                  isVerticalAlign=True)
+            yOffset+=self.letterCellHeight
             yOffset += self.drawLettersForWords(yOffset, word[0], word[1])
 
 
