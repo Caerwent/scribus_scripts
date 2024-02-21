@@ -240,7 +240,7 @@ class Letters(object):
         imgMinWidth = 2*self.letterCellWidth
         imgMaxWidth = 3.5*self.letterCellWidth
         maxWordsWidth = self.pageWidth-x-self.marginEnd
-        tableHeight = self.mode*self.letterCellHeight
+        tableHeight = (self.mode+1)*self.letterCellHeight
 
         if maxWordsWidth-(tableWidth) < imgMinWidth :
             scribus.messageBox("Error", f"Word {dataRow[self.indexWord][self.indexWord]} is too long")
@@ -302,7 +302,9 @@ class Letters(object):
                                   paragraphStyle=self.pStyleLetterSymbols,
                                   color=self.colorIcon,
                                   isVerticalAlign=True)
-                textbox = self.createText( x=xl,
+                objectlist.append(textbox)
+                if self.mode>1 :
+                    textbox = self.createText( x=xl,
                                   y=y+2*self.letterCellHeight,
                                   width=self.letterCellWidth,
                                   height=self.letterCellHeight,
@@ -310,7 +312,7 @@ class Letters(object):
                                   paragraphStyle=self.pStyleLetterSymbols,
                                   color=self.colorIcon,
                                   isVerticalAlign=True)
-                objectlist.append(textbox)
+                    objectlist.append(textbox)
         xl = xstart+(wordLen+1)*self.letterCellWidth
         line = scribus.createLine(xl,y,xl,y+tableHeight)
         scribus.setLineColor(self.defaultColor, line)
@@ -378,7 +380,7 @@ class Letters(object):
             return [nbCols, nbRows, 0]
 
     def drawLettersForWords(self, y, label, wordsLetters) :
-        maxHeightSpaces=self.pageHeight-y- self.marginTop -self.marginBottom
+        maxHeightSpaces=self.pageHeight-y -self.marginBottom
         maxWidthSpace = self.pageWidth - self.marginStart - self.marginEnd
         yOffset = y
         xOffset = self.marginStart
@@ -387,10 +389,13 @@ class Letters(object):
         # 2 : mot sous l'image + tableau ligne écriture, ligne collage capitales et minuscules
         # 3 : mot sous l'image + tableau ligne écriture, ligne collage minuscules et cursif
         paragraphStyles = [self.pStyleLetterUpper]
+        nbLinesLetters=1
         if self.mode == 2 :
             paragraphStyles = [self.pStyleLetterUpper, self.pStyleLetterLower]
+            nbLinesLetters=2
         if self.mode == 3 :
             paragraphStyles = [self.pStyleLetterLower, self.pStyleLetterScript]
+            nbLinesLetters=2
 
         colors = [self.defaultColor, self.color1, self.color2]
         colorLen = 3
@@ -403,7 +408,7 @@ class Letters(object):
         # draw letters block for each player and each mode
         n=1
         for p in range(self.nbPlayers) :
-            for m in range(self.mode-1) :
+            for m in range(nbLinesLetters) :
 
                 if maxHeightSpaces < yOffset+ blockHeight :
                     #scribus.messageBox("DEBUG", f"add page maxHeightSpaces={maxHeightSpaces} yOffset={yOffset} blockHeight={blockHeight} ")
@@ -412,7 +417,7 @@ class Letters(object):
                     scribus.gotoPage(self.currentPage)
                     yOffset = self.marginTop
                     xOffset = self.marginStart
-                    maxHeightSpaces=self.pageHeight-yOffset- self.marginTop -self.marginBottom
+                    maxHeightSpaces=self.pageHeight-yOffset -self.marginBottom
                     n=0
                 if n<nbBlocksPerLine :
                     xOffset += blockArrangement[0]*self.letterCellWidth
@@ -477,7 +482,12 @@ class Letters(object):
 
         yOffset = self.marginTop
 
+        scribus.progressReset()
+        scribus.progressTotal(len(wordsAndLetters ))
+        i=0
         for word in wordsAndLetters :
+            scribus.progressSet(i)
+            i+=1
             textbox = self.createText( x=self.marginStart,
                                   y=yOffset,
                                   width=self.pageWidth-self.marginStart-self.marginEnd,
@@ -486,7 +496,7 @@ class Letters(object):
                                   paragraphStyle=self.pStyleWordRef,
                                   color=self.defaultColor,
                                   isVerticalAlign=True)
-            yOffset+=self.letterCellHeight
+            #yOffset+=self.letterCellHeight
             yOffset += self.drawLettersForWords(yOffset, word[0], word[1])
 
 
