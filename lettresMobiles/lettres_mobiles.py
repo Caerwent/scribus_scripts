@@ -7,6 +7,7 @@ import re
 import os
 from pathlib import Path
 import math
+import random
 
 def loadFont(styleName, fontName, fontSize) :
     localFontName = fontName
@@ -506,6 +507,7 @@ class Letters(object):
                     if x : # ignore blank
                         letters.append(x )
 
+        random.shuffle(letters)
         wordsAndLetters.append([label, letters])
         scribus.progressReset()
 
