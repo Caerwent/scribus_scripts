@@ -108,7 +108,8 @@ class Letters(object):
 
         self.cFontRef = "Comic Sans MS Regular"
         self.cFont = "Arial Bold"
-        self.cFontLetter = "Script Ecole 2 Regular"
+        self.cFontScript = "Belle Allure GS Gras" #"Script Ecole 2 Regular"
+        self.belleAllureSpace = ["o", "b", "v", "w"]
         self.cFontSymbols = "DejaVu Sans Bold"
 
         self.colorIcon = "colorIcon"
@@ -116,9 +117,9 @@ class Letters(object):
         self.color1 = "color1"
         self.color2 = "color2"
         #fonts = scribus.getFontNames()
-        #scribus.messageBox("processCrosswords", f"Fonts: { [elt for elt in fonts if elt.startswith('Deja')  ] }")
+        #scribus.messageBox("processCrosswords", f"Fonts: { [elt for elt in fonts if elt.startswith('Belle')  ] }")
         scribus.defineColorRGB(self.color1, 0, 0, 255)
-        scribus.defineColorRGB(self.color2, 0, 255, 0)
+        scribus.defineColorRGB(self.color2, 25, 82, 16)
         scribus.defineColorRGB(self.colorIcon, 255, 0, 0)
         scribus.defineColorRGB(self.defaultColor, 0, 0, 0)
 
@@ -127,14 +128,15 @@ class Letters(object):
         self.masterPage = "grille_mots_ecole"
 
         self.csvData = []
-        self.bzh_chars = [["C'H", "C"],["CH", "Q"]]
+        self.bzh_chars = [["c'h", "c"],["ch", "q"]]
         self.nbPlayers = 0
 
-        self.cFontRef = loadFont(styleName=self.cStyleWordRef, fontName=self.cFontRef, fontSize=20.0)
-        self.cFontLetter = loadFont(styleName=self.cStyleLetterUpper, fontName=self.cFontLetter, fontSize=26.0)
-        loadFont(styleName=self.cStyleLetterLower, fontName=self.cFontLetter, fontSize=26.0)
-        loadFont(styleName=self.cStyleLetterScript, fontName=self.cFontLetter, fontSize=18.0)
-        self.cFontSymbols = loadFont(styleName=self.cStyleLetterSymbols, fontName=self.cFontLetter, fontSize=18.0)
+        scribus.createCharStyle(name=self.cStyleWordRef,font=self.cFontRef, fontsize=20.0)
+        scribus.createCharStyle(name=self.cStyleLetterUpper,font=self.cFont, fontsize=22.0)
+        scribus.createCharStyle(name=self.cStyleLetterLower,font=self.cFont, fontsize=22.0)
+        scribus.createCharStyle(name=self.cStyleLetterScript,font=self.cFontScript, fontsize=14.0)
+        scribus.createCharStyle(name=self.cStyleLetterSymbols,font=self.cFontSymbols, fontsize=18.0)
+
 
         scribus.createParagraphStyle(name=self.pStyleWordRef,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleWordRef)
         scribus.createParagraphStyle(name=self.pStyleLetterUpper,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleLetterUpper)
@@ -241,7 +243,11 @@ class Letters(object):
         imgMinWidth = 2*self.letterCellWidth
         imgMaxWidth = 3.5*self.letterCellWidth
         maxWordsWidth = self.pageWidth-x-self.marginEnd
-        tableHeight = (self.mode+1)*self.letterCellHeight
+
+        nbWordLines = 3
+        if self.mode == 1 :
+            nbWordLines = 2
+        tableHeight = nbWordLines*self.letterCellHeight
 
         if maxWordsWidth-(tableWidth) < imgMinWidth :
             scribus.messageBox("Error", f"Word {dataRow[self.indexWord][self.indexWord]} is too long")
@@ -276,15 +282,22 @@ class Letters(object):
         letterIdx=0
         xstart = x+imgWidth
         xl=0
+
+        # draw ref word grid
+
+        # vertical lines for each letter + last line
         for l in range(wordLen+1) :
             xl = xstart+l*self.letterCellWidth
             line = scribus.createLine(xl,y,xl,y+tableHeight)
             scribus.setLineColor(self.defaultColor, line)
             objectlist.append(line)
-            for r in range(self.mode+1) :
+            # horizontal line for each mode line + last line
+            for r in range(nbWordLines+1) :
                 yl=y+r*self.letterCellHeight
                 line = scribus.createLine(xl, yl, xl+self.letterCellWidth, yl)
+                scribus.setLineColor(self.defaultColor, line)
                 objectlist.append(line)
+            # draw mode indicators
             if l==0 :
                 textbox = self.createText( x=xl,
                                   y=y,
@@ -314,6 +327,7 @@ class Letters(object):
                                   color=self.colorIcon,
                                   isVerticalAlign=True)
                     objectlist.append(textbox)
+
         xl = xstart+(wordLen+1)*self.letterCellWidth
         line = scribus.createLine(xl,y,xl,y+tableHeight)
         scribus.setLineColor(self.defaultColor, line)
@@ -322,25 +336,32 @@ class Letters(object):
         return tableHeight
 
     def drawLettersBlock(self, objsList, x, y, nbRows, nbCols, letters, color, paragraphStyle, forceUpper) :
+        wordsLen = len(letters)
         for r in range(nbRows) :
             for c in range(nbCols) :
-                 xi=x+c*self.letterCellWidth
-                 yi=y+r*self.letterCellHeight
-                 newrectangle = scribus.createRect(xi,yi,self.letterCellWidth,self.letterCellHeight)
-                 scribus.setLineColor(color, newrectangle)
-                 objsList.append(newrectangle)
-                 currentLetter = letters[r*nbCols+c]
-                 if forceUpper :
-                     currentLetter.upper()
-                 textbox = self.createText( x=xi,
-                                  y=yi,
-                                  width=self.letterCellWidth,
-                                  height=self.letterCellHeight,
-                                  text=currentLetter,
-                                  paragraphStyle=paragraphStyle,
-                                  color=color,
-                                  isVerticalAlign=True)
-                 objsList.append(textbox)
+
+                xi=x+c*self.letterCellWidth
+                yi=y+r*self.letterCellHeight
+                if r*nbCols+c < wordsLen :
+                    newrectangle = scribus.createRect(xi,yi,self.letterCellWidth,self.letterCellHeight)
+                    scribus.setLineColor(color, newrectangle)
+                    objsList.append(newrectangle)
+                    currentLetter = letters[r*nbCols+c]
+                    if forceUpper :
+                        currentLetter = currentLetter.upper()
+                    elif (paragraphStyle == self.pStyleLetterScript) and (self.cFontScript == "Belle Allure GS Gras") and (currentLetter in self.belleAllureSpace) :
+                        currentLetter+=" "
+
+                    textbox = self.createText( x=xi,
+                                    y=yi,
+                                    width=self.letterCellWidth,
+                                    height=self.letterCellHeight,
+                                    text=currentLetter,
+                                    paragraphStyle=paragraphStyle,
+                                    color=color,
+                                    isVerticalAlign=True)
+                    objsList.append(textbox)
+
 
     def getBestArrangement(self, y, wordsLetters, N) :
         maxWidthSpace = self.pageWidth - self.marginStart - self.marginEnd
@@ -358,17 +379,17 @@ class Letters(object):
             run = True
             cellSurface = self.letterCellWidth*self.letterCellHeight
             while run :
-                nbBlocksPerLine = nbBlocksPerLine*2
+                nbBlocksPerLine = nbBlocksPerLine+1
                 nbCols = math.floor(maxWidthSpace/nbBlocksPerLine/self.letterCellWidth)
                 nbRows = math.ceil(wordsLen/nbCols)
                 nbBlocksLines = math.ceil(N/nbBlocksPerLine)
 
                 nbBlocksLinesOnCurrentPage = nbBlocksLines
-                if nbBlocksLines*self.letterCellHeight > maxHeightSpaces :
+                if nbBlocksLines*self.letterCellHeight*nbRows > maxHeightSpaces :
                     nbBlocksLinesOnCurrentPage = math.floor(maxHeightSpaces/(nbRows*self.letterCellHeight ))
 
                 blockSurface = nbCols*nbRows*cellSurface
-                allBlocksSurface = nbHBlocks*blockSurface*nbBlocksLines
+                allBlocksSurface = nbBlocksPerLine*blockSurface*nbBlocksLines
                 unUsed = maxWidthSpace * nbRows*nbBlocksLines*self.letterCellHeight - allBlocksSurface
                 # need to take care about margin if nbBlocksLinesOnCurrentPage != nbBlocksLines
 
@@ -383,19 +404,25 @@ class Letters(object):
         else :
             return [nbCols, nbRows, 0]
 
+    # draw letters block for all ref words for a page
+    # y: vertical headerOffset
+    # label : string containing ref words
+    # wordsLetters : array of words letters
     def drawLettersForWords(self, y, label, wordsLetters) :
-        maxHeightSpaces=self.pageHeight-y -self.marginBottom
+
         maxWidthSpace = self.pageWidth - self.marginStart - self.marginEnd
         yOffset = y
+        maxHeightSpaces=self.pageHeight
 
+        # add new page if no enought space vertically
         if maxHeightSpaces < yOffset+ self.letterCellHeight :
-            #scribus.messageBox("DEBUG", f"add page maxHeightSpaces={maxHeightSpaces} yOffset={yOffset} blockHeight={blockHeight} ")
+            #scribus.messageBox("DEBUG", f"add page 2 maxHeightSpaces={maxHeightSpaces} yOffset={yOffset} letterCellHeight={self.letterCellHeight} ")
             scribus.newPage(-1)
             self.currentPage=self.currentPage+1
             scribus.gotoPage(self.currentPage)
-            yOffset = self.marginTop
-            maxHeightSpaces=self.pageHeight-yOffset -self.marginBottom
+            yOffset = 0
 
+        # add ref words text
         textbox = self.createText( x=self.marginStart,
                                   y=yOffset,
                                   width=maxWidthSpace,
@@ -407,9 +434,10 @@ class Letters(object):
 
         yOffset+=self.letterCellHeight
 
+
         xOffset = self.marginStart
-        paragraphStyles = [self.pStyleLetterUpper]
-         # 1 : mot sous l'image + tableau ligne écriture, ligne collage capitales
+        paragraphStyles = [self.pStyleLetterUpper] # array of style for letters, it follows mode
+        # 1 : mot sous l'image + tableau ligne écriture, ligne collage capitales
         # 2 : mot sous l'image + tableau ligne écriture, ligne collage capitales et minuscules
         # 3 : mot sous l'image + tableau ligne écriture, ligne collage minuscules et cursif
         nbLinesLetters=1
@@ -421,35 +449,40 @@ class Letters(object):
             paragraphStyles = [self.pStyleLetterLower, self.pStyleLetterScript]
             nbLinesLetters=2
             hasUpperMode=False
+
+        # ref words letters should be drawn for each mode and each player
         N = self.nbPlayers * nbLinesLetters
+
+        # change color for player
         colors = [self.defaultColor, self.color1, self.color2]
         colorLen = 3
         currentcolorIdx = 0
+
         objsList = []
+
+        # try to find a letters arrangement to minimize space wasting => blockArrangement = [nb columns for a letters set, nb rows for a letters set, unused space surface]
         blockArrangement = self.getBestArrangement(yOffset, wordsLetters, N)
+
         nbBlocksPerLine = math.floor(maxWidthSpace / (blockArrangement[0]*self.letterCellWidth))
         blockHeight = blockArrangement[1]*self.letterCellHeight
-        #scribus.messageBox("DEBUG", f"BestArrangement = {blockArrangement} maxHeightSpaces={maxHeightSpaces} blockHeight={blockHeight} ")
-        # draw letters block for each player and each mode
+        blockWidth =  blockArrangement[0]*self.letterCellWidth
+        #scribus.messageBox("DEBUG", f"BestArrangement = {blockArrangement} maxHeightSpaces={maxHeightSpaces} blockHeight={blockHeight} nbBlocksPerLine={nbBlocksPerLine} wordsLetters={wordsLetters}")
+
+        # draw letters blocks one block contains all letters for all modes for a player
         n=1
         for p in range(self.nbPlayers) :
             for m in range(nbLinesLetters) :
-
+                # new page if not enought space for next block of letters
                 if maxHeightSpaces < yOffset+ blockHeight :
-                    #scribus.messageBox("DEBUG", f"add page maxHeightSpaces={maxHeightSpaces} yOffset={yOffset} blockHeight={blockHeight} ")
+                    #scribus.messageBox("DEBUG", f"add page 1 maxHeightSpaces={maxHeightSpaces} yOffset={yOffset} blockHeight={blockHeight} ")
                     scribus.newPage(-1)
                     self.currentPage=self.currentPage+1
                     scribus.gotoPage(self.currentPage)
-                    yOffset = self.marginTop
+                    yOffset = 0
                     xOffset = self.marginStart
-                    maxHeightSpaces=self.pageHeight-yOffset -self.marginBottom
                     n=1
-                if n<nbBlocksPerLine :
-                    xOffset += blockArrangement[0]*self.letterCellWidth
-                else :
-                    n=1
-                    xOffset = self.marginStart
-                    yOffset += blockHeight
+
+                # draw current letters block for player p and mode m
                 self.drawLettersBlock(
                     objsList=objsList,
                     x=xOffset,
@@ -460,19 +493,30 @@ class Letters(object):
                     color=colors[currentcolorIdx],
                     paragraphStyle=paragraphStyles[m],
                     forceUpper=(m==0 and hasUpperMode))
-                n+=1
+
+                # next block can be drawn on same line block or not
+                if n<nbBlocksPerLine :
+                    xOffset += blockWidth
+                    n+=1
+                else :
+                    n=1
+                    xOffset = self.marginStart
+                    yOffset += blockHeight
+
                 scribus.groupObjects(objsList)
                 objsList = []
 
-            currentcolorIdx+=1
-            if currentcolorIdx >= 3 :
-                currentcolorIdx = 0
+            # next color for next player except if new line
+            if n!=1 or nbBlocksPerLine==1 :
+                currentcolorIdx+=1
+                if currentcolorIdx >= 3 :
+                    currentcolorIdx = 0
 
         return yOffset
 
 
 
-
+    # draw letters pages
     def processLetters(self) :
         currentDataPage = -1
 
@@ -483,6 +527,9 @@ class Letters(object):
         letters = []
         label = ""
         sep=""
+
+        # merge all ref words and associated letters for each page
+        # wordsAndLetters=["ref word per page", [array of letters for ref words]]
         for data in self.csvData :
             scribus.progressSet(i)
             i+=1
@@ -500,13 +547,13 @@ class Letters(object):
 
             if self.isBZH :
                 for x in data[self.indexWord][self.indexWordFormatted] :
-                    if x : # ignore blank
+                    if x!= ' ' : # ignore blank
                         letters.append(self._uncheck_bzh(x) )
             else :
-                for x in data[self.indexWord][self.indexWordFormatted] :
-                    if x : # ignore blank
+                for x in data[self.indexWord][self.indexWord] :
+                    if x!= ' ' : # ignore blank
                         letters.append(x )
-
+        #scribus.messageBox('DEBUG', f"processLetters isBZH={self.isBZH} letters={letters}")
         random.shuffle(letters)
         wordsAndLetters.append([label, letters])
         scribus.progressReset()
@@ -515,17 +562,20 @@ class Letters(object):
         self.currentPage=self.currentPage+1
         scribus.gotoPage(self.currentPage)
 
-        yOffset = self.marginTop
+        yOffset = 0
 
         scribus.progressReset()
         scribus.progressTotal(len(wordsAndLetters ))
         i=0
+        # draw letters blocks for each page
         for word in wordsAndLetters :
             scribus.progressSet(i)
             i+=1
-            yOffset += self.drawLettersForWords(yOffset, word[0], word[1])
+            yOffset = self.drawLettersForWords(yOffset, word[0], word[1])
+        scribus.progressReset()
 
 
+    # load image album in page model
     def loadImageAlbum(self) :
         if self.imageAlbumPath != "" :
             scribus.editMasterPage(self.masterPage)
@@ -545,6 +595,7 @@ class Letters(object):
             scribus.closeMasterPage()
             scribus.gotoPage(1)
 
+    #draw ref words pages
     def processWords(self) :
 
         self.imageAlbumPath =  scribus.fileDialog("Open album image file", "*.jpg *.jpeg *.png *.webp")
@@ -562,6 +613,7 @@ class Letters(object):
         scribus.progressReset()
         scribus.progressTotal(len(self.csvData ))
         i=0
+        # group data per page
         for data in self.csvData :
             scribus.progressSet(i)
             i+=1
@@ -581,11 +633,12 @@ class Letters(object):
         scribus.progressReset()
         scribus.progressTotal(len(perPageDataList ))
         i=0
-        maxI = len(perPageDataList)-1
+        maxI = len(perPageDataList)
+        # draw ref words per page
         for perPageData in perPageDataList :
             scribus.progressSet(i)
             i+=1
-            hSpace = 10
+            hSpace = 10 # space between ref word
             y=self.headerOffset
             if len(perPageData) > 2 :
                 hSpace = 3
@@ -594,7 +647,7 @@ class Letters(object):
             for data in perPageData :
                 blockHeight=self.drawRefWord(self.marginStart, y+yOffset, data)
                 yOffset += blockHeight+hSpace
-            if i != maxI :
+            if i < maxI :
                 scribus.newPage(-1, self.masterPage)
                 self.currentPage=self.currentPage+1
                 scribus.gotoPage(self.currentPage)
