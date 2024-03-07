@@ -412,7 +412,7 @@ class Letters(object):
 
         maxWidthSpace = self.pageWidth - self.marginStart - self.marginEnd
         yOffset = y
-        maxHeightSpaces=self.pageHeight
+        maxHeightSpaces=self.pageHeight-5
 
         # add new page if no enought space vertically
         if maxHeightSpaces < yOffset+ self.letterCellHeight :
@@ -420,7 +420,7 @@ class Letters(object):
             scribus.newPage(-1)
             self.currentPage=self.currentPage+1
             scribus.gotoPage(self.currentPage)
-            yOffset = 0
+            yOffset = 5
 
         # add ref words text
         textbox = self.createText( x=self.marginStart,
@@ -478,7 +478,7 @@ class Letters(object):
                     scribus.newPage(-1)
                     self.currentPage=self.currentPage+1
                     scribus.gotoPage(self.currentPage)
-                    yOffset = 0
+                    yOffset = 5
                     xOffset = self.marginStart
                     n=1
 
@@ -563,7 +563,7 @@ class Letters(object):
         self.currentPage=self.currentPage+1
         scribus.gotoPage(self.currentPage)
 
-        yOffset = 0
+        yOffset = 5
 
         scribus.progressReset()
         scribus.progressTotal(len(wordsAndLetters ))
