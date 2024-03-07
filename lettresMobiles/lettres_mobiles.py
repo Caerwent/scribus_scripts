@@ -274,7 +274,7 @@ class Letters(object):
 
 
         if dataRow[self.indexImage]:
-            img = scribus.createImage(x, y, imgWidth, tableHeight-self.letterCellHeight)
+            img = scribus.createImage(x+0.2, y+0.2, imgWidth-0.4, tableHeight-self.letterCellHeight-0.4)
             scribus.loadImage(dataRow[self.indexImage], img)
             self.resizeImageFrameObj(img)
             objectlist.append(img)
