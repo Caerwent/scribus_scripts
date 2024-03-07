@@ -131,7 +131,7 @@ class Letters(object):
         self.bzh_chars = [["c'h", "c"],["ch", "q"]]
         self.nbPlayers = 0
 
-        scribus.createCharStyle(name=self.cStyleWordRef,font=self.cFontRef, fontsize=20.0)
+        scribus.createCharStyle(name=self.cStyleWordRef,font=self.cFontRef, fontsize=18.0)
         scribus.createCharStyle(name=self.cStyleLetterUpper,font=self.cFont, fontsize=22.0)
         scribus.createCharStyle(name=self.cStyleLetterLower,font=self.cFont, fontsize=22.0)
         scribus.createCharStyle(name=self.cStyleLetterScript,font=self.cFontScript, fontsize=14.0)
@@ -266,7 +266,7 @@ class Letters(object):
                                   y=y+tableHeight-self.letterCellHeight,
                                   width=imgWidth,
                                   height=self.letterCellHeight,
-                                  text=dataRow[self.indexWord][self.indexWord].capitalize(),
+                                  text=dataRow[self.indexWord][self.indexWord].upper(),
                                   paragraphStyle=self.pStyleWordRef,
                                   color=self.defaultColor,
                                   isVerticalAlign=True)
@@ -474,7 +474,7 @@ class Letters(object):
             for m in range(nbLinesLetters) :
                 # new page if not enought space for next block of letters
                 if maxHeightSpaces < yOffset+ blockHeight :
-                    #scribus.messageBox("DEBUG", f"add page 1 maxHeightSpaces={maxHeightSpaces} yOffset={yOffset} blockHeight={blockHeight} ")
+                    #scribus.messageBox("DEBUG", f"add page 1 label={label} nbBlocksPerLine={nbBlocksPerLine} maxHeightSpaces={maxHeightSpaces} yOffset={yOffset} blockHeight={blockHeight} ")
                     scribus.newPage(-1)
                     self.currentPage=self.currentPage+1
                     scribus.gotoPage(self.currentPage)
@@ -495,13 +495,13 @@ class Letters(object):
                     forceUpper=(m==0 and hasUpperMode))
 
                 # next block can be drawn on same line block or not
-                if n<nbBlocksPerLine :
-                    xOffset += blockWidth
-                    n+=1
-                else :
+                if (n>=nbBlocksPerLine) or (n == N) :
                     n=1
                     xOffset = self.marginStart
                     yOffset += blockHeight
+                else :
+                    xOffset += blockWidth
+                    n+=1
 
                 scribus.groupObjects(objsList)
                 objsList = []
@@ -537,11 +537,12 @@ class Letters(object):
                 currentDataPage = data[self.indexPage]
 
             if currentDataPage != data[self.indexPage] :
-                 wordsAndLetters.append([label, letters])
-                 letters = []
-                 label = ""
-                 sep=""
-                 currentDataPage = data[self.indexPage]
+                random.shuffle(letters)
+                wordsAndLetters.append([label, letters])
+                letters = []
+                label = ""
+                sep=""
+                currentDataPage = data[self.indexPage]
             label+=sep+data[self.indexWord][self.indexWord]
             sep=" "
 
@@ -553,7 +554,7 @@ class Letters(object):
                 for x in data[self.indexWord][self.indexWord] :
                     if x!= ' ' : # ignore blank
                         letters.append(x )
-        #scribus.messageBox('DEBUG', f"processLetters isBZH={self.isBZH} letters={letters}")
+
         random.shuffle(letters)
         wordsAndLetters.append([label, letters])
         scribus.progressReset()
