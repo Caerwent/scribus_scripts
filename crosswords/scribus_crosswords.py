@@ -83,6 +83,23 @@ class GridCreator(object):
         #self.cellType = Dialogs.itemDialog('Cell type', 'Select empty cells type', ['hashes', 'waves'])
         self.cellType = scribus.valueDialog('Select empty cells type','0 = hashes\n1 = waves','0')
 
+    def getModelTopOffset(self) :
+        if "ecole" in scribus.masterPageNames() :
+            scribus.editMasterPage("ecole")
+
+            scribus.selectObject("TexteCompetence")
+            textBottom = scribus.getSelectedObject(0)
+            scribus.deselectAll()
+            if textBottom != None :
+                x, y = scribus.getPosition("TexteCompetence")
+                w, h =scribus.getSize("TexteCompetence")
+
+            scribus.closeMasterPage()
+            scribus.gotoPage(1)
+            return y+h+10
+        else :
+            return 0
+
     def order_number_words(self):
         self.wordlist.sort(key=itemgetter(calculate.IDX_ROW, calculate.IDX_COL))
         count, icount = 1, 1
@@ -234,11 +251,17 @@ class GridCreator(object):
 
         pageWidth, pageHeight = scribus.getPageSize()
         marginH, marginL, marginR, marginB = scribus.getPageMargins()
+        modelTopOffset = self.getModelTopOffset()
+
+        gridMarginH = marginH
+        if modelTopOffset!= 0 :
+            gridMarginH = modelTopOffset
+
         x = int(marginL)
-        y = int(marginH)
+        y = int(gridMarginH)
 
         xStep = int( (pageWidth -marginR -marginL) / (self.cols+1))
-        yStep = int( (pageHeight - marginB - marginH) / (self.rows+1))
+        yStep = int( (pageHeight - marginB - gridMarginH) / (self.rows+1))
         maxX = x+(self.cols+1)*xStep
         if yStep > xStep:
             yStep = xStep
