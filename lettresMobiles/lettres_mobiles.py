@@ -376,13 +376,16 @@ class Letters(object):
             blocksArrangements = []
             nbCols = math.floor(maxWidthSpace/self.letterCellWidth)
             nbBlocksPerLine = 1
+            height = self.letterCellWidth*nbRows
             run = True
             cellSurface = self.letterCellWidth*self.letterCellHeight
             while run :
                 nbBlocksPerLine = nbBlocksPerLine+1
                 nbCols = math.floor(maxWidthSpace/nbBlocksPerLine/self.letterCellWidth)
                 nbRows = math.ceil(wordsLen/nbCols)
+
                 nbBlocksLines = math.ceil(N/nbBlocksPerLine)
+                height = self.letterCellHeight*nbRows*nbBlocksLines
 
                 nbBlocksLinesOnCurrentPage = nbBlocksLines
                 if nbBlocksLines*self.letterCellHeight*nbRows > maxHeightSpaces :
@@ -390,14 +393,14 @@ class Letters(object):
 
                 blockSurface = nbCols*nbRows*cellSurface
                 allBlocksSurface = nbBlocksPerLine*blockSurface*nbBlocksLines
-                unUsed = maxWidthSpace * nbRows*nbBlocksLines*self.letterCellHeight - allBlocksSurface
+                unUsed = maxWidthSpace * height - allBlocksSurface
                 # need to take care about margin if nbBlocksLinesOnCurrentPage != nbBlocksLines
 
-                blocksArrangements.append([nbCols, nbRows, unUsed])
+                blocksArrangements.append([nbCols, nbRows, unUsed, height])
                 if nbCols == 1:
                     run = False
 
-            blocksArrangements.sort(key=lambda elt: elt[2])
+            blocksArrangements.sort(key=lambda elt: elt[3])
 
             return blocksArrangements[0]
 
