@@ -116,10 +116,12 @@ class Letters(object):
         self.defaultColor = "defaultColor"
         self.color1 = "color1"
         self.color2 = "color2"
+        self.color3 = "color3"
         #fonts = scribus.getFontNames()
         #scribus.messageBox("processCrosswords", f"Fonts: { [elt for elt in fonts if elt.startswith('Belle')  ] }")
         scribus.defineColorRGB(self.color1, 0, 0, 255)
         scribus.defineColorRGB(self.color2, 25, 82, 16)
+        scribus.defineColorRGB(self.color3, 171, 30, 0)
         scribus.defineColorRGB(self.colorIcon, 255, 0, 0)
         scribus.defineColorRGB(self.defaultColor, 0, 0, 0)
 
@@ -457,8 +459,8 @@ class Letters(object):
         N = self.nbPlayers * nbLinesLetters
 
         # change color for player
-        colors = [self.defaultColor, self.color1, self.color2]
-        colorLen = 3
+        colors = [self.defaultColor, self.color1, self.color2, self.color3]
+        colorLen = 4
         currentcolorIdx = 0
 
         objsList = []
@@ -512,7 +514,7 @@ class Letters(object):
             # next color for next player except if new line
             if n!=1 or nbBlocksPerLine==1 :
                 currentcolorIdx+=1
-                if currentcolorIdx >= 3 :
+                if currentcolorIdx >= colorLen :
                     currentcolorIdx = 0
 
         return yOffset
