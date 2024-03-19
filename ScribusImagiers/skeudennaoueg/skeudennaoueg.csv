@@ -1,8 +1,8 @@
-TEXT1,text2,pic
-LABOUS,labous,labous.webp
-AOUR,aour,aour.jpg
-KASTELL,kastell,kastell.png
-NIJAL,nijal,nijal.jpg
-PEZH AOUR,pezh aour,pezh-aour.jpg
-ROUE,roue,roue.jpg
-SKOEDOÙ AOUR,skoedoù aour,skoedou-aour.png
+TEXT1;text2;textFR;pic
+LABOUS;labous;oiseau;labous.webp
+AOUR;aour;or;aour.jpg
+KASTELL;kastell;château;kastell.png
+NIJAL;nijal;voler;nijal.jpg
+PEZH AOUR;pezh aour;pièce d'or;pezh-aour.jpg
+ROUE;roue;roi;roue.jpg
+SKOEDOÙ AOUR;skoedoù aour;pièces d'or;skoedou-aour.png

@@ -70,7 +70,6 @@ class ImagierScribus(object):
         self.card=None
         self.cardsize=None
         self.cardName="card"
-        self.itemsInPage=0
         self.currentPage=1
 
         scribus.gotoPage(self.currentPage)
@@ -84,8 +83,9 @@ class ImagierScribus(object):
             scribus.messageBox('Error', 'No card model found')
             sys.exit(1)
 
-        self.itemsInPage=0
         self.cardsize = scribus.getSize(self.cardName)
+        self.marginTop, self.marginStart, self.marginEnd, self.marginBottom = scribus.getPageMargins()
+        self.pageWidth, self.pageHeight = scribus.getPageSize()
 
     def initFromCardModel(self) :
         scribus.deselectAll()
@@ -117,9 +117,9 @@ class ImagierScribus(object):
         scribus.deleteObject(objName)
         scribus.deselectAll()
         if imageHeader==None :
-            scribus.messageBox('Error', 'No image template found in model')
-            sys.exit(1)
-        self.headers.append(imageHeader)
+            scribus.messageBox('Warning', 'No image template found in model')
+        else :
+            self.headers.append(imageHeader)
 
     def checkHeader(self, headers) :
         for header in self.headers :
@@ -161,29 +161,28 @@ class ImagierScribus(object):
 
                 if result != None :
                     text = result.group(1)
-
-                try:
-                    index = self.headers.index(text)
-                    if index >= 0:
-                        textLength = scribus.getTextLength(element)
-                        scribus.insertText(cardData[index], -1, element)
-                        scribus.selectText(0,textLength,element)
-                        scribus.deleteText(element)
-                except Exception as e :
-                    scribus.messageBox("error", f" {e} for item {text}")
+                    try:
+                        index = self.headers.index(text)
+                        if index >= 0:
+                            textLength = scribus.getTextLength(element)
+                            scribus.insertText(cardData[index], -1, element)
+                            scribus.selectText(0,textLength,element)
+                            scribus.deleteText(element)
+                    except Exception as e :
+                        scribus.messageBox("error", f" {e} for item {text}")
 
             elif scribus.getObjectType(element) == "ImageFrame" :
                 filename = scribus.getImageFile(element)
                 result = re.search('%VAR_(\w+)%', filename)
                 if result != None :
                     filename = result.group(1)
-                try:
-                    index = self.headers.index(filename)
-                    if index >= 0:
-                        scribus.loadImage(cardData[index], element)
-                        self.resizeImageFrameObj(element)
-                except Exception as e :
-                    scribus.messageBox("error", f" {e} for item {filename}")
+                    try:
+                        index = self.headers.index(filename)
+                        if index >= 0:
+                            scribus.loadImage(cardData[index], element)
+                            self.resizeImageFrameObj(element)
+                    except Exception as e :
+                        scribus.messageBox("error", f" {e} for item {filename}")
 
         scribus.groupObjects()
         scribus.deselectAll()
@@ -193,31 +192,28 @@ class ImagierScribus(object):
         scribus.progressReset()
         scribus.progressTotal(len(data))
         i=1
+        x=self.marginStart
+        y=self.marginTop
+
         for dataItem in data :
             scribus.progressSet(i)
             i+=1
-            if self.itemsInPage >= 4 :
-                self.itemsInPage = 0
+            #scribus.messageBox("error", f" createCardsList x={x} y={y} w={self.cardsize[0]} h={self.cardsize[1]} maxX={self.pageWidth-self.marginEnd} maxY={self.pageHeight-self.marginBottom}")
+            if y+self.cardsize[1] > self.pageHeight-self.marginBottom :
+                x= self.marginStart
+                y=self.marginTop
                 scribus.newPage(-1)
                 self.currentPage=self.currentPage+1
                 scribus.gotoPage(self.currentPage)
-            self.itemsInPage = self.itemsInPage+1
-            x=0
-            y=0
-            match self.itemsInPage:
-                case 1:
-                    x=0
-                    y=0
-                case 2:
-                    x=self.cardsize[0]
-                    y=0
-                case 3 :
-                    x=0
-                    y=self.cardsize[1]
-                case 4 :
-                    x=self.cardsize[0]
-                    y=self.cardsize[1]
+
             self.createCard( dataItem, x, y)
+
+            if x+2*self.cardsize[0] <= self.pageWidth-self.marginEnd :
+                x+=self.cardsize[0]
+            else :
+                x= self.marginStart
+                y += self.cardsize[1]
+
         scribus.progressReset()
         scribus.deleteObject(self.cardName)
 
