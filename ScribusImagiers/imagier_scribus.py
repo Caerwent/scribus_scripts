@@ -78,6 +78,7 @@ class ImagierScribus(object):
         for item in objList:
             if item[1] == 12: #type 12 == group
                 self.card=item[0]
+                self.cardName = scribus.getProperty(item[0], "itemName")
                 break
         if self.card==None :
             scribus.messageBox('Error', 'No card model found')
@@ -101,7 +102,7 @@ class ImagierScribus(object):
                 text = ""
                 for elt in contents:
                     text = text +elt
-                result = re.search('%VAR_(\w+)%', text)
+                result = re.search('%VAR_(.*?)%', text)
 
                 if result != None :
                     text = result.group(1)
@@ -110,7 +111,7 @@ class ImagierScribus(object):
 
             elif scribus.getObjectType(element) == "ImageFrame" :
                 filename = scribus.getImageFile(element)
-                result = re.search('%VAR_(\w+)%', filename)
+                result = re.search('%VAR_(.*?)%', filename)
                 if result != None :
                     imageHeader =result.group(1)
         objName=scribus.groupObjects()
@@ -157,7 +158,7 @@ class ImagierScribus(object):
                 text = ""
                 for elt in contents:
                     text = text +elt
-                result = re.search('%VAR_(\w+)%', text)
+                result = re.search('%VAR_(.*?)%', text)
 
                 if result != None :
                     text = result.group(1)
@@ -173,7 +174,7 @@ class ImagierScribus(object):
 
             elif scribus.getObjectType(element) == "ImageFrame" :
                 filename = scribus.getImageFile(element)
-                result = re.search('%VAR_(\w+)%', filename)
+                result = re.search('%VAR_(.*?)%', filename)
                 if result != None :
                     filename = result.group(1)
                     try:
