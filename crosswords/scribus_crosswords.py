@@ -46,6 +46,7 @@ class GridCreator(object):
         self.colorH = "colorH"
         self.colorV = "colorV"
         self.imagePath = None
+        self.pointToMillimeter = 0.352777778
 
         scribus.createCharStyle(name=self.cStyleIndex,font=self.cFont, fontsize=18.0)
         scribus.createCharStyle(name=self.cStyleWordIndex,font=self.cFont, fontsize=14.0)
@@ -125,7 +126,7 @@ class GridCreator(object):
         imageY = (frameH - imageH) / 2.0
         imageX = (frameW - imageW) / 2.0
 
-        scribus.setImageOffset(imageX, imageY, obj)
+        scribus.setImageOffset(imageX/self.pointToMillimeter, imageY/self.pointToMillimeter, obj)
 
     def createWordView(self, x, y, width, word, row, col, orientation, imgFile) :
         objectlist=[]

@@ -133,6 +133,8 @@ class Letters(object):
         self.bzh_chars = [["c'h", "c"],["ch", "q"]]
         self.nbPlayers = 0
 
+        self.pointToMillimeter = 0.352777778
+
         scribus.createCharStyle(name=self.cStyleWordRef,font=self.cFontRef, fontsize=18.0)
         scribus.createCharStyle(name=self.cStyleLetterUpper,font=self.cFont, fontsize=22.0)
         scribus.createCharStyle(name=self.cStyleLetterLower,font=self.cFont, fontsize=22.0)
@@ -196,7 +198,7 @@ class Letters(object):
         imageY = (frameH - imageH) / 2.0
         imageX = (frameW - imageW) / 2.0
 
-        scribus.setImageOffset(imageX, imageY, obj)
+        scribus.setImageOffset(imageX/self.pointToMillimeter, imageY/self.pointToMillimeter, obj)
 
     def checkHeader(self, headers) :
         for header in self.headers :
