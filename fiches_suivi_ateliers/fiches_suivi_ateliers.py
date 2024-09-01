@@ -13,7 +13,7 @@ class FicheSuiviAtelierItem(object):
         self.parseFilename()
 
     def parseFilename(self) :
-        self.name = Path(self.imageFilename).stem.replace("-"," ").replace("_"," ").lower()
+        self.name = Path(self.imageFilename).stem.replace("-"," ").replace("_"," ")
 
 
 class FicheSuiviAtelier(object):
@@ -83,6 +83,9 @@ class FicheSuiviAtelier(object):
                 if f.lower().endswith(ext):
                     self.data.append(
                         FicheSuiviAtelierItem(os.path.join(self.imagePath,f)))
+
+        self.data.sort(key=lambda x: x.imageFilename.lower())
+
 
     def askForImageNameParsing(self) :
         resp=scribus.messageBox( "Nom des objets",  "Trouver les noms d'objets à partir du nom du fichier image ?",   icon=scribus.ICON_NONE, button1=scribus.BUTTON_YES,     button2=scribus.BUTTON_NO)
