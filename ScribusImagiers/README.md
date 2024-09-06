@@ -15,9 +15,13 @@ Il se base sur un fichier de modèle Scribus qui peut être modifié comme vous 
  Par exemple :
 
 > TEXT1;text2;textFR;pic
+>
 > LABOUS;labous;oiseau;labous.webp
+>
 > AOUR;aour;or;aour.jpg
+>
 > KASTELL;kastell;château;kastell.png
+>
 > NIJAL;nijal;voler;nijal.jpg
 
  La première ligne doit contenir un nom de variable du modèle par colonne, puis chacune des lignes suivantes contiendra la valeur de chacune de ces variables pour les cartes à générer.
