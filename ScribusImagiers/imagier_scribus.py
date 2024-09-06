@@ -14,7 +14,6 @@ class CsvCreator(object):
         self.targetCsvFile = None
         self.validImages = [".jpg",".gif",".png",".tga"]
         self.imagesFiles = []
-        self.pointToMillimeter = 0.352777778
 
 
     def findImagesFromPath(self) :
@@ -73,6 +72,8 @@ class ImagierScribus(object):
         self.cardsize=None
         self.cardName="card"
         self.currentPage=1
+
+        self.pointToMillimeter = 0.352777778
 
         scribus.gotoPage(self.currentPage)
         objList = scribus.getPageItems()
@@ -143,7 +144,7 @@ class ImagierScribus(object):
         imageY = (frameH - imageH) / 2.0
         imageX = (frameW - imageW) / 2.0
 
-        scribus.setImageOffset(imageX/self.pointToMillimeter, imageY/self.pointToMillimeter, obj)
+        scribus.setImageOffset(imageX, imageY, obj)
 
     def createCard(self, cardData, x, y) :
 
