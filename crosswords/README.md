@@ -12,6 +12,7 @@ Les premières lignes du fichier peuvent contenir certaines information à utili
   - ***isBZH=true*** pour gérer l'alphabet breton (non géré si la ligne n'est pas présente)
 
 Cela donne par exemple :
+
 > wordFont=Belle Allure GS Gras
 > wordSize=14
 > isBZH=true
@@ -21,6 +22,7 @@ Cela donne par exemple :
 > labous=labous.webp
 
 Ou encore
+
 > isBZH=true
 > kanañ=kanan.png
 > kaoter=kaoter.jpg
@@ -28,14 +30,17 @@ Ou encore
 > labous=labous.webp
 
 Une fois lancé, le script fera une proposition de grille dans une boîte de dialog. La grille est représentée sous forme texte avec le caractère `=` pour les cellules vides de la grille. Si la proposition est satisfaisante, il suffit de l'accepter en cliquant sur le bouton *Oui* sinon le bouton *Non* lancera une nouvelle proposition.
+
 ![Proposition de grille](doc/assets/dialog_result.png)
 
 Lorsqu'une proposition est acceptée, une nouvelle boîte de dialogue permet de choisir le motif à utiliser pour remplir les cellules vides de la grille. Actuellement deux choix sont possibles, des hachures ou un motif en forme de vagues.
+
 ![Proposition de grille](doc/assets/dialog_fill_empty_cells.png)
 
 Le script génère alors la grille finale et la liste de mots à y placer. Cela peut prendre un certains temps suivant le nombre de mots et la puissance de l'ordinateur. La barre de progression de Scribus (en bas à droite de la fenêtre principale) est avec la progression de la génération de la grille.
 
 Une fois terminé, la première page contient la grille de mots à remplir et la seconde page la liste des mots avec les emplacements dans la grille.
+
 ![Proposition de grille](doc/assets/result_crosswords.png)
 ![Proposition de grille](doc/assets/result_listwords.png)
 
