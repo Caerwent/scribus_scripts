@@ -49,4 +49,5 @@ Le modèle est copié puis placé en priorité de façon à remplir la page hori
  ![Modèle de carte au format Scribus](doc/result.png)
 
 Si une carte doit être modifiée manuellement, il faut au préalable dégrouper ses éléments (avec Scribus, les éléments d'un groupe ne peuvent pas être modifiés).
+
 Il ne reste plus qu'à imprimer et couper les cartes.
