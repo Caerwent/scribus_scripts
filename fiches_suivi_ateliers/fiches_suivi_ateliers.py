@@ -7,13 +7,28 @@ import re
 import os
 from pathlib import Path
 
+def loadFont(styleName, fontName, fontSize) :
+    localFontName = fontName
+    try :
+        scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
+    except Exception as e :
+        localFontName= "Arial Regular"
+        scribus.messageBox("Error", f"Error: {e} \n La font {fontName} n'a pas été trouvée, utilisation de {localFontName}.")
+        try :
+            scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
+        except Exception as e2 :
+            localFontName = result = list(filter(lambda x: x.startswith('Arial'), scribus.getFontNames()))[0]
+            scribus.messageBox("Error", f"Error: {e} \n La font Arial Regular n'a pas été trouvée, utilisation de la font {localFontName}.")
+            scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
+    return localFontName
+
 class FicheSuiviAtelierItem(object):
     def __init__(self, imageFilename):
         self.imageFilename = imageFilename
         self.parseFilename()
 
     def parseFilename(self) :
-        self.name = Path(self.imageFilename).stem.replace("-"," ").replace("_"," ")
+        self.name = Path(self.imageFilename).stem.replace("_"," ")
 
 
 class FicheSuiviAtelier(object):
@@ -50,8 +65,10 @@ class FicheSuiviAtelier(object):
         self.pStyleWordRef = "char_style_word_ref"
         self.pStyleWordRefDate = "char_style_word_ref_date"
         self.cFontRef = "Comic Sans MS Regular"
-        scribus.createCharStyle(name=self.cStyleWordRef,font=self.cFontRef, fontsize=10.0)
-        scribus.createCharStyle(name=self.cStyleWordRefDate,font=self.cFontRef, fontsize=12.0)
+
+        self.cFontRef = loadFont(self.cStyleWordRef, self.cFontRef, 10.0)
+        self.cFontRef = loadFont(self.cStyleWordRefDate, self.cFontRef, 12.0)
+
         scribus.createParagraphStyle(name=self.pStyleWordRefDate,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_LEFT, charstyle=self.cStyleWordRefDate)
         scribus.createParagraphStyle(name=self.pStyleWordRef,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleWordRef)
 

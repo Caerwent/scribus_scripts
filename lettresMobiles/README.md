@@ -73,3 +73,5 @@ En cas de problème avec les polices utilisées par le script, ou si vous souhai
 > self.cFontSymbols = "DejaVu Sans Bold"
 
 L'API Scribus ne permet pas actuellement de proposer une boîte de dialoge affichant la liste des polices disponibles mais cela devrait être le cas dans la prochaine version de Scribus.
+
+La police *Belle Allure GS Gras* peut être téléchargée ici : [https://fr.fonts2u.com/belle-allure-gs-gras.policet](https://fr.fonts2u.com/belle-allure-gs-gras.police)

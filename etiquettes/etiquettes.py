@@ -10,19 +10,20 @@ import math
 import random
 
 def loadFont(styleName, fontName, fontSize) :
+    localFontName = fontName
     try :
-        scribus.createCharStyle(name=styleName,font=fontName, fontsize=fontSize)
+        scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
     except Exception as e :
-
-        localFontName= "Arial Bold"
-        scribus.messageBox("Error", f"Error: {e} \n Use default font {localFontName}.")
+        localFontName= "Arial Regular"
+        scribus.messageBox("Error", f"Error: {e} \n La font {fontName} n'a pas été trouvée, utilisation de {localFontName}.")
         try :
             scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
         except Exception as e2 :
-            localFontName =scribus.getFontNames()[0]
-            scribus.messageBox("Error", f"Error: {e} \n Use first font {localFontName}.")
+            localFontName = result = list(filter(lambda x: x.startswith('Arial'), scribus.getFontNames()))[0]
+            scribus.messageBox("Error", f"Error: {e} \n La font Arial Regular n'a pas été trouvée, utilisation de la font {localFontName}.")
             scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
-    scribus.createParagraphStyle(name=styleName,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=styleName)
+    return localFontName
+
 
 class EtiquettePolice(object):
     #a = 3 étiquettes capitales rouge-noir
@@ -48,13 +49,14 @@ class EtiquettePolice(object):
                 self.fontsize = 18.0
 
          # paragraph styles
-        self.pStyle = "char_style_"+letterCode
+        self.cStyle = "char_style_"+letterCode
+        self.pStyle = "paragraph_label_style_"+letterCode
         self.textColor = "textColor"
         self.firstCharColor = "firstCharColor"
         scribus.defineColorRGB(self.textColor, 0, 0, 0)
         scribus.defineColorRGB(self.firstCharColor, 255, 0, 0)
-        loadFont(self.pStyle, self.fontName, self.fontsize)
-
+        self.fontName= loadFont(self.cStyle, self.fontName, self.fontsize)
+        scribus.createParagraphStyle(name=self.pStyle ,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyle)
 
     def createText(self, x, y, width, height, text) :
         textbox = scribus.createText(x, y, width,height)

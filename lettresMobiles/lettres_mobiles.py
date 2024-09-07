@@ -54,7 +54,7 @@ class CsvCreator(object):
                     for image in self.imagesFiles :
                         scribus.progressSet(i)
                         i+=1
-                        filebasename =Path(image).stem.replace("-"," ").replace("_"," ").lower()
+                        filebasename =Path(image).stem.replace("_"," ").lower()
                         row = ["",filebasename,image]
                         csvWriter.writerow(row)
                     scribus.progressReset()
