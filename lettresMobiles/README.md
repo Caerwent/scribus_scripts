@@ -7,7 +7,7 @@ Le script utilise un fichier de modèle (lettresMobiles.sla), il peut être remp
 
 Le script utilise également un fichier CSV, avec le point virgule comme séparateur, permettant de renseigner les informations pour les mots de l'activité.
 
-La première ligne doit contenir le nom des colonnes colonne ***Page***, ***Mot*** et ***Image***, puis chacune des lignes suivantes contiendra la valeur de chacune de ces colonnes pour chaque mot.
+La première ligne doit contenir le nom des colonnes qui sont ***Page***, ***Mot*** et ***Image***, puis chacune des lignes suivantes contiendra la valeur de chacune de ces colonnes pour chaque mot.
 
 La page est un numéro qui indique sur quel page doit se trouver le mot, la deuxième colonne contient le mot lui-même et la troisième colonne le nom du fichier image.
 
@@ -23,26 +23,28 @@ La page est un numéro qui indique sur quel page doit se trouver le mot, la deux
 
 
 
-Le script permet de créer le fichier CSV en entrée à partir d'un dossier d'image qui restera à compléter manuellement. Le mot sera renseigné avec le nom du fichier image en remplaçant les caractères souligné (`_`) et tiret (`-`) par un espace. Il ne restera donc qu'à compléter la page.
+Le script permet de créer le fichier CSV en entrée à partir d'un dossier d'image qui restera à compléter manuellement. Le mot sera renseigné avec le nom du fichier image en remplaçant les caractères souligné (`_`) par un espace. Il ne restera donc qu'à compléter la page.
 
 ![Modèle de carte au format Scribus](doc/dialog_choice.png)
 
-Lors du chargement d'un fichier CSV préalablement créé, le script demande si l'alaphabet breton doit être géré. Dans ce cas, les chaînes de caractères ***ch*** et ***c'h*** sont considérées comme une seule lettre.
+Lors du chargement d'un fichier CSV préalablement créé, le script demande si l'alphabet breton doit être géré. Dans ce cas, les chaînes de caractères ***ch*** et ***c'h*** sont considérées comme une seule lettre.
 
 ![Modèle de carte au format Scribus](doc/dialog_bzh.png)
 
-Ensuite le script demande à choisir le mode, qui correspond a un niveau de maternelle :
+Ensuite le script demande à choisir le mode, qui correspond à un niveau de maternelle :
  - 1 : mot sous l'image + une ligne écriture + ligne collage capitales
  - 2 : mot sous l'image + une ligne écriture + ligne collage capitales + ligne collage minuscules
  - 3 : mot sous l'image + une ligne écriture + ligne collage minuscules + ligne collage cursif
 
 ![Modèle de carte au format Scribus](doc/dialog_mode.png)
 
-Enfin le script demande le nombre d'élève qui feront l'activité :
+Enfin le script demande le nombre d'élèves qui feront l'activité :
 
 ![Modèle de carte au format Scribus](doc/dialog_eleves.png)
 
-La première partie du document généré contient les fiches d'activité remises à l'élève, on y retrouve les mots sous forme de grille avec l'image qui l'illustre, le mot de référence et les lignes d'écriture ou de collage à remplir par l'élève.
+La génération du document peut prendre un certain temps suivant le nombre de mots, le nombre d'élèves indiqué et la puissance de l'ordinateur. La barre de progression de Scribus (en bas à droite de la fenêtre principale) est mise à jour avec la progression de la génération du document.
+
+La première partie du document généré contient les fiches d'activité remises à chaque élève, on y retrouve les mots sous forme de grille avec l'image qui l'illustre, le mot de référence et les lignes d'écriture ou de collage à remplir par l'élève.
 
 Les mots sont placés sur la page indiquée dans le fichier CSV. Attention de ne pas dépasser 3 mots par page, sauf à avoir modifier le fichier modèle pour que l'entête prenne moins de place.
 
@@ -50,11 +52,13 @@ Les mots sont placés sur la page indiquée dans le fichier CSV. Attention de ne
 
 La seconde partie du document correspond aux lettres à découper puis à coller.
 
-Elles sont regroupées par page, puis par élève (un changement de couleur permet d'identifier des paquets de lettre pour chaque page d'activité afin de faciliter la distribution aux élèves). Chaque paquet contient les lettres pour les différentes lignes de collage. LE placement des paquets est fait de façon à essayer de perdre le moins de place possible sur la feuille.
+Elles sont regroupées par page, puis par élève (un changement de couleur permet d'identifier des paquets de lettres pour élève afin de faciliter la distribution). Chaque paquet contient les lettres pour les différentes lignes de collage dans un ordre aléatoire. Le placement des paquets est fait de façon à essayer de perdre le moins de place possible sur la feuille.
+
+Exemple d'un arragengement de lettres :
 
 ![Modèle de carte au format Scribus](doc/result2.png)
 
-Example d'un autre arrangement de lettre :
+Example d'un autre arrangement de lettres :
 
 ![Modèle de carte au format Scribus](doc/result3.png)
 
@@ -67,3 +71,5 @@ En cas de problème avec les polices utilisées par le script, ou si vous souhai
 > self.cFontScript = "Belle Allure GS Gras"
 >
 > self.cFontSymbols = "DejaVu Sans Bold"
+
+L'API Scribus ne permet pas actuellement de proposer une boîte de dialoge affichant la liste des polices disponibles mais cela devrait être le cas dans la prochaine version de Scribus.

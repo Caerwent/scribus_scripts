@@ -7,6 +7,8 @@ Scribus offre la possibilité de lancer des scripts écrits en python ce qui per
 
 Cette collection rassemble quelques scripts utilisés pour la réalisation de documents utiles en classe de maternelle et sont adaptés pour gérer la langue bretonne.
 
+Ces scripts sont écrits pour Scribus 1.5 ou 1.6. La version 1.7 à venir devrait offrir plus de possibilités et permettra d'améliorer certains d'entre eux.
+
  - [Liste d'étiquettes](etiquettes) : création d'une liste d'étiquettes de prénoms en utilisant plusieurs polices pour chaque prénom. Charge un fichier CSV contenant les informations utiles à la création de la liste.
  - [Flash cards](ScribusImagiers) : création d'une liste de flash cards à partir d'un modèle, d'une liste d'images et d'un fichier CSV. Le script permet également de créer un fichier CSV à partir d'un dossier d'image qui restera à compléter manuellement.
  - [Mots fléchés](crosswords) : Générateur de grille de mots fléchés à partir d'une liste de mots au format texte et d'images. Basé sur le travail de David Whitlock [https://github.com/riverrun/genxword](https://github.com/riverrun/genxword).

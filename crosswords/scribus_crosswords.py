@@ -17,9 +17,23 @@ def inputOksol(text):
     return resp==scribus.BUTTON_YES
 
 def inputIncrSize():
-    resp=scribus.messageBox("crosswaord", "And increase the grid size? ",     icon=scribus.ICON_NONE, button1=scribus.BUTTON_YES,     button2=scribus.BUTTON_NO)
+    resp=scribus.messageBox("crossword", "And increase the grid size? ",     icon=scribus.ICON_NONE, button1=scribus.BUTTON_YES,     button2=scribus.BUTTON_NO)
     return resp==scribus.BUTTON_YES
 
+def loadFont(styleName, fontName, fontSize) :
+    localFontName = fontName
+    try :
+        scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
+    except Exception as e :
+        localFontName= "Arial Regular"
+        scribus.messageBox("Error", f"Error: {e} \n La font {fontName} n'a pas été trouvée, utilisation de {localFontName}.")
+        try :
+            scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
+        except Exception as e2 :
+            localFontName = result = list(filter(lambda x: x.startswith('Arial'), scribus.getFontNames()))[0]
+            scribus.messageBox("Error", f"Error: {e} \n La font Arial Regular n'a pas été trouvée, utilisation de la font {localFontName}.")
+            scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
+    return localFontName
 
 class GridCreator(object):
     def __init__(self, rows, cols, grid, wordlist, isBZH, empty='=', wordFont=None, wordFontSize=18.0):
@@ -48,9 +62,9 @@ class GridCreator(object):
         self.imagePath = None
         self.pointToMillimeter = 0.352777778
 
-        scribus.createCharStyle(name=self.cStyleIndex,font=self.cFont, fontsize=18.0)
-        scribus.createCharStyle(name=self.cStyleWordIndex,font=self.cFont, fontsize=14.0)
-        scribus.createCharStyle(name=self.cStyleWordTitle,font=self.cFont, fontsize=24.0)
+        self.cFont = loadFont(self.cStyleIndex, self.cFont, 18.0)
+        self.cFont = loadFont(self.cStyleWordIndex, self.cFont, 14.0)
+        self.cFont = loadFont(self.cStyleWordTitle, self.cFont, 24.0)
 
         scribus.createParagraphStyle(name=self.pStyleIndex,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleIndex)
         scribus.createParagraphStyle(name=self.pStyleWordTitle,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleWordTitle)
@@ -64,16 +78,7 @@ class GridCreator(object):
         if wordFont != None :
             self.cFontWord=wordFont
 
-        try :
-            scribus.createCharStyle(name=self.cStyleWord,font=self.cFontWord, fontsize=wordFontSize)
-        except Exception as e :
-            scribus.messageBox("processCrosswords", "Error: %s \n Use default font."%e)
-            self.cFontWord = "DejaVu Sans Condensed Bold"
-            try :
-                scribus.createCharStyle(name=self.cStyleWord,font=self.cFontWord, fontsize=wordFontSize)
-            except Exception as e2 :
-                self.cFontWord =scribus.getFontNames()[0]
-                scribus.createCharStyle(name=self.cStyleWord,font=self.cFontWord, fontsize=wordFontSize)
+        self.cFontWord = loadFont(self.cStyleWord, self.cFontWord, wordFontSize)
         	
         scribus.createParagraphStyle(name=self.pStyleWord,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleWord)
 
