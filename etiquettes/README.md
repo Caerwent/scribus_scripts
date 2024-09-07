@@ -41,17 +41,30 @@ Voic le résultat pour l'example précédant :
 Pour changer la police utilisée, il suffit de changer dans le script la portion de code suivante pour y remplacer le nom des polices et leur taille :
 
 >self.fontName="Comic Sans MS Regular"
+>
 >self.fontsize = 20.0
+>
 >match letterCode:
+>
 >   case "a":
+>
 >       self.isUpper=True
+>
 >       self.hasFirstLetterColored = True
+>
 >   case "b":
+>
 >       self.isUpper=True
+>
 >   case "c":
+>
 >       self.fontName="Liberation Serif Regular"
+>
 >   case "d":
+>
 >       self.fontName="Belle Allure GS Gras"
+>
 >       self.fontsize = 18.0
+>
 
 L'API scribus ne permet pas simplement de choisir une police avec une boîte de dialogue, le script sera améliorer lorsque cela sera possible de le faire.
