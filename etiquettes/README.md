@@ -12,7 +12,9 @@ Ce fichier CSV contient autant de ligne qu'il y a de prénoms et chaque ligne es
  - c : prénom écrit en minuscules script
  - d : prénom écrit en minuscules cursives
 
- ***Attention*** pour les minuscules cursives, le script utilise la police *Belle Allure GS Gras*. Si elle n'est pas trouvé une autre police sera utilisé qui ne donnera pas d'écriture minuscule.
+ Chaque type d'étiquette sera généré en trois exemplaires.
+
+ ***Attention*** pour les minuscules cursives, le script utilise la police *Belle Allure GS Gras*. Si elle n'est pas trouvée une autre police sera utilisée par défaut mais qui ne donnera pas d'écriture cursive.
 La police peut être téléchargée ici : [https://fr.fonts2u.com/belle-allure-gs-gras.policet](https://fr.fonts2u.com/belle-allure-gs-gras.police)
 
 Voici un exemple de fichier CSV :
@@ -30,7 +32,7 @@ Voici un exemple de fichier CSV :
 > Jean-Baptiste;abcd
 >
 
-La génération du document peut prendre un certain temps suivant le nombre de prénoms, d'étiquettes par prénom et la puissance de l'ordinateur. La barre de progression de Scribus (en bas à droite de la fenêtre principale) est mise à jour avec la progression de la génération de la grille.
+La génération du document peut prendre un certain temps suivant le nombre de prénoms, d'étiquettes par prénom et la puissance de l'ordinateur. La barre de progression de Scribus (en bas à droite de la fenêtre principale) est mise à jour avec la progression de la génération du document.
 
 Voic le résultat pour l'example précédant :
 
@@ -42,17 +44,25 @@ Pour changer la police utilisée, il suffit de changer dans le script la portion
 >self.fontsize = 20.0
 >
 >match letterCode:
->>case "a":
->>>self.isUpper=True
->>>self.hasFirstLetterColored = True
->>
->>case "b":
->>>self.isUpper=True
->>
->>case "c":
->>>self.fontName="Liberation Serif Regular"
->>case "d":
->>>self.fontName="Belle Allure GS Gras"
->>>self.fontsize = 18.0
+>
+>   case "a":
+>
+>       self.isUpper=True
+>
+>       self.hasFirstLetterColored = True
+>
+>   case "b":
+>
+>       self.isUpper=True
+>
+>   case "c":
+>
+>       self.fontName="Liberation Serif Regular"
+>
+>   case "d":
+>
+>       self.fontName="Belle Allure GS Gras"
+>
+>       self.fontsize = 18.0
 
 L'API scribus ne permet pas simplement de choisir une police avec une boîte de dialogue, le script sera améliorer lorsque cela sera possible de le faire.
