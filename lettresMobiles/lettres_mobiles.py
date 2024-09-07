@@ -15,12 +15,12 @@ def loadFont(styleName, fontName, fontSize) :
         scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
     except Exception as e :
         localFontName= "Arial Regular"
-        scribus.messageBox("Error", f"Error: {e} \n Use default font {localFontName}.")
+        scribus.messageBox("Error", f"Error: {e} \n La font {fontName} n'a pas été trouvée, utilisation de {localFontName}.")
         try :
             scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
         except Exception as e2 :
             localFontName = result = list(filter(lambda x: x.startswith('Arial'), scribus.getFontNames()))[0]
-            scribus.messageBox("Error", f"Error: {e} \n Use first font {localFontName}.")
+            scribus.messageBox("Error", f"Error: {e} \n La font Arial Regular n'a pas été trouvée, utilisation de la font {localFontName}.")
             scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
     return localFontName
 
