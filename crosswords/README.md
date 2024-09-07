@@ -54,3 +54,6 @@ Une fois terminé, la première page contient la grille de mots à remplir et la
 ![Proposition de grille](doc/result_crosswords.png)
 ![Proposition de grille](doc/result_listwords.png)
 
+Les indications d'orientation des mots (horizontal ou vertical) sont écrites en breton si la gestion de la langue bretonne a été activée dans le fichier CSV.
+
+

@@ -14,13 +14,12 @@ def loadFont(styleName, fontName, fontSize) :
     try :
         scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
     except Exception as e :
-
-        localFontName= "Arial Bold"
+        localFontName= "Arial Regular"
         scribus.messageBox("Error", f"Error: {e} \n Use default font {localFontName}.")
         try :
             scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
         except Exception as e2 :
-            localFontName =scribus.getFontNames()[0]
+            localFontName = result = list(filter(lambda x: x.startswith('Arial'), scribus.getFontNames()))[0]
             scribus.messageBox("Error", f"Error: {e} \n Use first font {localFontName}.")
             scribus.createCharStyle(name=styleName,font=localFontName, fontsize=fontSize)
     return localFontName
@@ -106,10 +105,16 @@ class Letters(object):
         self.pStyleLetterScript = "char_style_letter_script"
         self.pStyleLetterSymbols = "char_style_letter_symbols"
 
+        #police utilisee pour le mot de reference
         self.cFontRef = "Comic Sans MS Regular"
+        # police utilisee pour les lettre
         self.cFont = "Arial Bold"
+        # font utilisee pour le cursif
         self.cFontScript = "Belle Allure GS Gras" #"Script Ecole 2 Regular"
+        # probleme avec la police Belle Allure : il faut ajouter un espace apres certaines lettre a boucle
+        # mettre une liste vide pour une autre police
         self.belleAllureSpace = ["o", "b", "v", "w"]
+        # police utilisee pour les symboles crayon et ciseaux
         self.cFontSymbols = "DejaVu Sans Bold"
 
         self.colorIcon = "colorIcon"
@@ -135,11 +140,11 @@ class Letters(object):
 
         self.pointToMillimeter = 0.352777778
 
-        scribus.createCharStyle(name=self.cStyleWordRef,font=self.cFontRef, fontsize=18.0)
-        scribus.createCharStyle(name=self.cStyleLetterUpper,font=self.cFont, fontsize=22.0)
-        scribus.createCharStyle(name=self.cStyleLetterLower,font=self.cFont, fontsize=22.0)
-        scribus.createCharStyle(name=self.cStyleLetterScript,font=self.cFontScript, fontsize=14.0)
-        scribus.createCharStyle(name=self.cStyleLetterSymbols,font=self.cFontSymbols, fontsize=18.0)
+        self.cFontRef = loadFont(self.cStyleWordRef, self.cFontRef, 18.0)
+        self.cFont = loadFont(self.cStyleLetterUpper, self.cFont, 22.0)
+        self.cFont = loadFont(self.cStyleLetterLower, self.cFont, 22.0)
+        self.cFontRef = loadFont(self.cStyleLetterScript, self.cFontScript, 14.0)
+        self.cFontSymbols = loadFont(self.cStyleLetterSymbols, self.cFontSymbols, 18.0)
 
 
         scribus.createParagraphStyle(name=self.pStyleWordRef,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleWordRef)
