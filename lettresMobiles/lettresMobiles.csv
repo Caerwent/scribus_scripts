@@ -1,9 +1,9 @@
 Page;Mot;Image
-1;fulorin;/media/avalon/Famille/documents/scribus/scribus_scripts/crosswords/data/fulorin.jpg
-1;kanan;/media/avalon/Famille/documents/scribus/scribus_scripts/crosswords/data/kanan.png
-2;kaoter;/media/avalon/Famille/documents/scribus/scribus_scripts/crosswords/data/kaoter.jpg
-2;kibell;/media/avalon/Famille/documents/scribus/scribus_scripts/crosswords/data/kibell.jpg
-2;mintin;/media/avalon/Famille/documents/scribus/scribus_scripts/crosswords/data/mintin.jpg
-3;pezh aour;/media/avalon/Famille/documents/scribus/scribus_scripts/crosswords/data/pezh-aour.jpg
-3;roue;/media/avalon/Famille/documents/scribus/scribus_scripts/crosswords/data/roue.jpg
-3;toenn;/media/avalon/Famille/documents/scribus/scribus_scripts/crosswords/data/toenn.png
+1;fulorin;data/fulorin.jpg
+1;kanan;data/kanan.png
+2;kaoter;data/kaoter.jpg
+2;kibell;data/kibell.jpg
+2;mintin;data/mintin.jpg
+3;pezh aour;data/pezh-aour.jpg
+3;roue;data/roue.jpg
+3;toenn;data/toenn.png

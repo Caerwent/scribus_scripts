@@ -1,6 +1,6 @@
 # Script de génération de flash cards
 
-Ce script a pour objectif de simplifier la création de flash cards utilisées pour l'apprentissage de mots de vocabulaires.
+Ce script a pour objectif de simplifier la création de flash cards utilisées pour l'apprentissage de mots de vocabulaire.
 Il se base sur un fichier de modèle Scribus qui peut être modifié comme vous le souhaitez à condition de respecter les points suivants :
  - les éléments du modèle qui seront à remplir automatiquement doivent contenir un texte de la forme
 
@@ -36,7 +36,7 @@ Il se base sur un fichier de modèle Scribus qui peut être modifié comme vous 
 
 Le fichier créé contient une première ligne avec les variables trouvées dans le modèle suivie d'autant de lignes que d'images dans le dossier.
   Le script a le comportement suivant :
-   - le nom de l'image sert à remplir les valeurs des variables en remplaçant les caractères souligné (`_`) et tiret (`-`) par un espace,
+   - le nom de l'image sert à remplir les valeurs des variables en remplaçant les caractères souligné (`_`) par un espace,
    - si le nom de la variable est en majuscule, la valeur est mise également en majuscule,
    - si le nom de la variable se termine par ***FR***, le contenu est laissé vide
 

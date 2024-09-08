@@ -6,7 +6,7 @@ Même si ce script a été fait initalement pour des prénoms, rien n'empêche d
 Il se lance sur un document vide, plutôt au format A4.
 Une fois le script lancé, une boîte de dialogue s'affiche permettant de sélectionner le fichier CSV contenant les informations utiles à la création de la liste.
 
-Ce fichier CSV contient autant de ligne qu'il y a de prénoms et chaque ligne est construite avec le prénom, suivi d'un point virgule (séparateur utilisé pour le fichier CSV) et d'une série de lettres dont la signification est la suivante :
+Ce fichier CSV contient autant de lignes qu'il y a de prénoms et chaque ligne est construite avec le prénom, suivi d'un point virgule (séparateur utilisé pour le fichier CSV) et d'une série de lettres dont la signification est la suivante :
  - a : prénom écrit en capitales avec la première lettre écrite en rouge (le reste en noir)
  - b : prénom écrit en capitales noires
  - c : prénom écrit en minuscules script
@@ -34,7 +34,7 @@ Voici un exemple de fichier CSV :
 
 La génération du document peut prendre un certain temps suivant le nombre de prénoms, d'étiquettes par prénom et la puissance de l'ordinateur. La barre de progression de Scribus (en bas à droite de la fenêtre principale) est mise à jour avec la progression de la génération du document.
 
-Voic le résultat pour l'example précédant :
+Voic le résultat pour l'exemple précédant :
 
 ![Modèle de carte au format Scribus](doc/result.png)
 
@@ -67,4 +67,4 @@ Pour changer la police utilisée, il suffit de changer dans le script la portion
 >       self.fontsize = 18.0
 >
 
-L'API scribus ne permet pas simplement de choisir une police avec une boîte de dialogue, le script sera améliorer lorsque cela sera possible de le faire.
+L'API scribus ne permet pas simplement de choisir une police avec une boîte de dialogue, le script sera amélioré lorsque cela sera possible de le faire.
