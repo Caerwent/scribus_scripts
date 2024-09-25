@@ -14,6 +14,8 @@ class Anniversaire(object):
         self.ages="3456"
         self.pointToMillimeter = 0.352777778
         self.name = scribus.valueDialog("Saisie du nom","Entrez le prénom de l'élève.","")
+        resp=scribus.messageBox( "Genre",  "Est-ce un prénom féminin ?",   icon=scribus.ICON_NONE, button1=scribus.BUTTON_YES,     button2=scribus.BUTTON_NO)
+        self.genre = resp==scribus.BUTTON_YES
         self.age = scribus.valueDialog("Saisie de l'âge",'Entrez son âge (3, 4, 5 ou 6).','3')
         if not (self.age in self.ages) :
             scribus.messageBox('Erreur', "L'âge doit être 3, 4, 5 ou 6.")
@@ -35,6 +37,7 @@ class Anniversaire(object):
         imageX = (frameW - imageW) / 2.0
 
         scribus.setImageOffset(imageX/self.pointToMillimeter, imageY/self.pointToMillimeter, obj)
+
     def replaceText(self, textFrame, varName, text) :
         textLen = len(text)
         varLen = len(varName)
@@ -57,16 +60,28 @@ class Anniversaire(object):
 
     def replaceNameAndAge(self) :
         objList = scribus.getPageItems()
-        frName = "de "+self.name
+        preposition = "de "
         if self.name[0].lower() in self.vowels :
-           frName = "d'"+self.name
+           preposition = "d'"
         for item in objList:
             itemName = item[0]
-
             if scribus.getObjectType(itemName) == "TextFrame" :
-                self.replaceText(itemName, "%PRENOM%", self.name)
-                self.replaceText(itemName, "%PRENOM_FR%", frName)
+                name = self.name
+                if itemName=="Titre" :
+                    self.replaceText(itemName, "%PRENOM%", name.upper())
+                    self.replaceText(itemName, "%PREPO%", preposition.upper())
+                else :
+                    self.replaceText(itemName, "%PRENOM%", name)
+                    self.replaceText(itemName, "%PREPO%", preposition)
                 self.replaceText(itemName, "%A%", self.age)
+                if self.genre :
+                    self.replaceText(itemName, "%PRONOM_FR%", "Elle")
+                    self.replaceText(itemName, "%POSSESSIF%", "he")
+                    self.replaceText(itemName, "%PRONOM%", "he")
+                else :
+                    self.replaceText(itemName, "%PRONOM_FR%", "Il")
+                    self.replaceText(itemName, "%POSSESSIF%", "e")
+                    self.replaceText(itemName, "%PRONOM%", "en")
                 if self.age in "26" :
                     self.replaceText(itemName, "%B%", "V")
                     self.replaceText(itemName, "%b%", "v")

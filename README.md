@@ -14,5 +14,6 @@ Ces scripts sont écrits pour Scribus 1.5 ou 1.6. La version 1.7 à venir devrai
  - [Mots fléchés](crosswords) : Générateur de grille de mots fléchés à partir d'une liste de mots au format texte et d'images. Basé sur le travail de David Whitlock [https://github.com/riverrun/genxword](https://github.com/riverrun/genxword).
  - [Activité d'apprentissage de lecture et d'écriture](lettresMobiles) : Ce script utilise une liste de mots et d'images pour générer le matériel d'une activité d'écriture et de découpage de lettres pour former des mots. Il est adapté aux différents niveaux de classes de maternelle. Le script permet de créer le fichier CSV en entrée à partir d'un dossier d'image qui restera à compléter manuellement.
  - [Fiche de suivi d'atelier](fiches_suivi_ateliers) : Génère une fiche de suivi d'atelier à partir d'une liste d'images représentant les différentes activités de l'atelier.
+ - [anniversaires](anniversaires) : Modèle de texte type cahier de vie de classe pour les anniversaires. Permet de remplir le prénom et l'age de l'élève, ne reste à l'enseignant qu'à mettre des photos.
  - Le scritp *SetImagesPaths.py* permet de remplacer le chemin de toutes les images du document ouvert.
  - Le script *center_all_images.py* tente de centrer toutes les images du document ouvert dans leur cadre d'image.
