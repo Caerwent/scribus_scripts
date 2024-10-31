@@ -132,6 +132,8 @@ class Letters(object):
 
         self.imagePath = None
         self.imageAlbumPath = None
+        self.imageAlbumPosition = (0,0)
+        self.imageAlbumSize = (0,0)
         self.masterPage = "grille_mots_ecole"
 
         self.csvData = []
@@ -216,6 +218,7 @@ class Letters(object):
         csvfileName = scribus.fileDialog("Open CSV data file", "*.csv")
         if csvfileName != "":
             try:
+                csvPath = os.path.dirname(os.path.abspath(csvfileName))
                 resp=scribus.messageBox("Langue", "Gérer les lettres pour le Breton ?",     icon=scribus.ICON_NONE, button1=scribus.BUTTON_YES,     button2=scribus.BUTTON_NO)
                 self.isBZH = resp==scribus.BUTTON_YES
                 # Load file contents
@@ -228,6 +231,8 @@ class Letters(object):
                             filteredRow[self.indexWord] = [self._check_bzh(filteredRow[self.indexWord]), filteredRow[self.indexWord]]
                         else :
                             filteredRow[self.indexWord] = [filteredRow[self.indexWord], filteredRow[self.indexWord]]
+                        if filteredRow[self.indexImage] != "" and not os.path.isabs(filteredRow[self.indexImage]) :
+                            filteredRow[self.indexImage] = os.path.join(csvPath, filteredRow[self.indexImage] )
                         self.csvData.append(filteredRow)
             except Exception as e :
                 scribus.messageBox("CSV", "Error processing file %s"%e)
@@ -245,7 +250,7 @@ class Letters(object):
         scribus.deselectAll()
         return textbox
 
-    def drawRefWord(self, x, y, dataRow) :
+    def drawRefWord(self, isCompact, x, y, dataRow) :
 
         wordLen = len(dataRow[self.indexWord][self.indexWordFormatted])
         tableWidth = wordLen*self.letterCellWidth
@@ -257,6 +262,13 @@ class Letters(object):
         if self.mode == 1 :
             nbWordLines = 2
         tableHeight = nbWordLines*self.letterCellHeight
+        blockHeight = tableHeight #word into table
+        wordPosY = y+tableHeight-self.letterCellHeight
+
+        if isCompact ==False: #word above table
+            blockHeight = tableHeight+self.letterCellHeight
+            wordPosY = y
+            y = y+self.letterCellHeight
 
         if maxWordsWidth-(tableWidth) < imgMinWidth :
             scribus.messageBox("Error", f"Word {dataRow[self.indexWord][self.indexWord]} is too long")
@@ -272,7 +284,7 @@ class Letters(object):
         objectlist.append(rect)
 
         textbox = self.createText( x=x,
-                                  y=y+tableHeight-self.letterCellHeight,
+                                  y=wordPosY,
                                   width=imgWidth,
                                   height=self.letterCellHeight,
                                   text=dataRow[self.indexWord][self.indexWord].upper(),
@@ -283,7 +295,7 @@ class Letters(object):
 
 
         if dataRow[self.indexImage]:
-            img = scribus.createImage(x+0.2, y+0.2, imgWidth-0.4, tableHeight-self.letterCellHeight-0.4)
+            img = scribus.createImage(x+0.2, y+0.2, imgWidth-0.4, blockHeight-self.letterCellHeight-0.4)
             scribus.loadImage(dataRow[self.indexImage], img)
             self.resizeImageFrameObj(img)
             objectlist.append(img)
@@ -342,7 +354,7 @@ class Letters(object):
         scribus.setLineColor(self.defaultColor, line)
         objectlist.append(line)
         scribus.groupObjects(objectlist)
-        return tableHeight
+        return blockHeight
 
     def drawLettersBlock(self, objsList, x, y, nbRows, nbCols, letters, color, paragraphStyle, forceUpper) :
         wordsLen = len(letters)
@@ -545,6 +557,7 @@ class Letters(object):
         for data in self.csvData :
             scribus.progressSet(i)
             i+=1
+
             if currentDataPage==-1:
                 currentDataPage = data[self.indexPage]
 
@@ -555,17 +568,19 @@ class Letters(object):
                 label = ""
                 sep=""
                 currentDataPage = data[self.indexPage]
-            label+=sep+data[self.indexWord][self.indexWord]
-            sep=" "
 
-            if self.isBZH :
-                for x in data[self.indexWord][self.indexWordFormatted] :
-                    if x!= ' ' : # ignore blank
-                        letters.append(self._uncheck_bzh(x) )
-            else :
-                for x in data[self.indexWord][self.indexWord] :
-                    if x!= ' ' : # ignore blank
-                        letters.append(x )
+            if data[self.indexWord][self.indexWord].lower() != "imagealbum" :
+                label+=sep+data[self.indexWord][self.indexWord]
+                sep=" "
+
+                if self.isBZH :
+                    for x in data[self.indexWord][self.indexWordFormatted] :
+                        if x!= ' ' : # ignore blank
+                            letters.append(self._uncheck_bzh(x) )
+                else :
+                    for x in data[self.indexWord][self.indexWord] :
+                        if x!= ' ' : # ignore blank
+                            letters.append(x )
 
         random.shuffle(letters)
         wordsAndLetters.append([label, letters])
@@ -608,17 +623,46 @@ class Letters(object):
             scribus.closeMasterPage()
             scribus.gotoPage(1)
 
+    # load image album in page model
+    def getImageAlbumInfo(self) :
+        scribus.editMasterPage(self.masterPage)
+        scribus.selectObject("ImageAlbum")
+        imageAlbum = scribus.getSelectedObject(0)
+        scribus.deselectAll()
+        if imageAlbum == None :
+            scribus.closeMasterPage()
+            scribus.messageBox('Error', "Objet ImageAlbum non trouvé")
+            sys.exit(1)
+        scribus.loadImage(self.imageAlbumPath, "ImageAlbum")
+        self.resizeImageFrameObj("ImageAlbum")
+        self.imageAlbumPosition = scribus.getPosition("ImageAlbum")
+        self.imageAlbumSize =scribus.getSize("ImageAlbum")
+        self.headerOffset=self.imageAlbumPosition[1]+self.imageAlbumSize[1]
+        scribus.closeMasterPage()
+        scribus.gotoPage(1)
+
+    def createPageImageAlbum(self, imageFile) :
+        img = scribus.createImage(self.imageAlbumPosition[0], self.imageAlbumPosition[1], self.imageAlbumSize[0], self.imageAlbumSize[1])
+        scribus.loadImage(imageFile, img)
+        self.resizeImageFrameObj(img)
+
     #draw ref words pages
     def processWords(self) :
 
-        self.imageAlbumPath =  scribus.fileDialog("Open album image file", "*.jpg *.jpeg *.png *.webp")
+        resp=scribus.messageBox("Image album", "Choisir une image d'album unique ?",     icon=scribus.ICON_NONE, button1=scribus.BUTTON_YES,     button2=scribus.BUTTON_NO)
+        if resp==scribus.BUTTON_YES :
+            self.imageAlbumPath =  scribus.fileDialog("Open album image file", "*.jpg *.jpeg *.png *.webp")
+            self.loadImageAlbum()
+        else :
+            self.imageAlbumPath = ""
+            self.getImageAlbumInfo()
 
         self.mode = int(scribus.valueDialog('Selection du mode','1 = collage capitales\n2 = collage capitales et minuscules\n3 = collage minuscules et cursif','0'))
         self.nbPlayers = int(scribus.valueDialog("Selection du nombre d'élèves",'Saisir un nombre > 0','0'))
         if self.nbPlayers <=0 :
             scribus.messageBox('Error', "Nombre d'élèves invalide")
             sys.exit(1)
-        self.loadImageAlbum()
+
         perPageDataList = []
         currentPageDataList = []
         currentDataPage = -1
@@ -653,12 +697,22 @@ class Letters(object):
             i+=1
             hSpace = 10 # space between ref word
             y=self.headerOffset
+            albumImage = None
+            for data in perPageData :
+                if data[self.indexWord][self.indexWord].lower()=="imagealbum" :
+                    albumImage = data[self.indexImage]
+                    perPageData.remove(data)
+                    break
+
             if len(perPageData) > 2 :
                 hSpace = 3
             yOffset=hSpace
             blockHeight=0
+            if self.imageAlbumPath == ""  and albumImage != None :
+                self.createPageImageAlbum(albumImage)
+
             for data in perPageData :
-                blockHeight=self.drawRefWord(self.marginStart, y+yOffset, data)
+                blockHeight=self.drawRefWord(hSpace == 3, self.marginStart, y+yOffset, data)
                 yOffset += blockHeight+hSpace
             if i < maxI :
                 scribus.newPage(-1, self.masterPage)
