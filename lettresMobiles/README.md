@@ -21,13 +21,31 @@ La page est un numéro qui indique sur quel page doit se trouver le mot, la deux
 >
 > 2;kaoter;img/kaoter.jpg
 
+Il est également possible d'indiquer dans ce fichier une image d'album différente par page, dans ce cas il faudra ajouter une ligne spéciale pour chaque page en remplaçant le mot par le mot clé ***imageAlbum***.
 
+ Par exemple :
+
+> Page;Mot;Image
+>
+> 1;imageAlbum;img/album1.jpg
+>
+> 1;fulorin;img/fulorin.jpg
+>
+> 1;kanan;img/kanan.png
+>
+> 2;kaoter;img/kaoter.jpg
+
+***Dans ce fichier CSV, le chemin dans le nom des images peut être en absolu ou en relatif, à partir de l'emplacement du fichier CSV.***
+
+Il sera souvent préférable de mettre le nom en relatif par rapport au fichier CSV.
 
 Le script permet de créer le fichier CSV en entrée à partir d'un dossier d'image qui restera à compléter manuellement. Le mot sera renseigné avec le nom du fichier image en remplaçant les caractères souligné (`_`) par un espace. Il ne restera donc qu'à compléter la page.
 
 ![Modèle de carte au format Scribus](doc/dialog_choice.png)
 
-Lors du chargement d'un fichier CSV préalablement créé, le script demande si l'alphabet breton doit être géré. Dans ce cas, les chaînes de caractères ***ch*** et ***c'h*** sont considérées comme une seule lettre.
+Lors du chargement d'un fichier CSV préalablement créé, une boîte de dialogue permet de choisir si l'image d'album est à choisir pour toutes les pages (qu'il y en ait une indiquée par page dans le fichier CSV ou non) et si oui, de choisir une image sur le disque.
+
+Le script demande si l'alphabet breton doit être géré. Dans ce cas, les chaînes de caractères ***ch*** et ***c'h*** sont considérées comme une seule lettre.
 
 ![Modèle de carte au format Scribus](doc/dialog_bzh.png)
 
