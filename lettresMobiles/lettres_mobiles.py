@@ -122,11 +122,15 @@ class Letters(object):
         self.color1 = "color1"
         self.color2 = "color2"
         self.color3 = "color3"
+        self.color4 = "color4"
+        self.color5 = "color5"
         #fonts = scribus.getFontNames()
         #scribus.messageBox("processCrosswords", f"Fonts: { [elt for elt in fonts if elt.startswith('Belle')  ] }")
         scribus.defineColorRGB(self.color1, 0, 0, 255)
         scribus.defineColorRGB(self.color2, 25, 82, 16)
         scribus.defineColorRGB(self.color3, 171, 30, 0)
+        scribus.defineColorRGB(self.color4, 147, 81, 22)
+        scribus.defineColorRGB(self.color5, 125, 60, 152 )
         scribus.defineColorRGB(self.colorIcon, 255, 0, 0)
         scribus.defineColorRGB(self.defaultColor, 0, 0, 0)
 
@@ -137,7 +141,7 @@ class Letters(object):
         self.masterPage = "grille_mots_ecole"
 
         self.csvData = []
-        self.bzh_chars = [["c'h", "c"],["ch", "q"]]
+        self.bzh_chars = [["c'h", "c"],["c’h", "c"],["ch", "q"]]
         self.nbPlayers = 0
 
         self.pointToMillimeter = 0.352777778
@@ -183,6 +187,7 @@ class Letters(object):
     def _check_bzh(self, word):
         formatted = word.replace(self.bzh_chars[0][0], self.bzh_chars[0][1])
         formatted = formatted.replace(self.bzh_chars[1][0], self.bzh_chars[1][1])
+        formatted = formatted.replace(self.bzh_chars[2][0], self.bzh_chars[2][1])
         return formatted
 
     def _uncheck_bzh(self, char) :
@@ -190,6 +195,8 @@ class Letters(object):
             return self.bzh_chars[0][0]
         if char ==  self.bzh_chars[1][1] :
             return self.bzh_chars[1][0]
+        if char ==  self.bzh_chars[2][1] :
+            return self.bzh_chars[2][0]
         return char
 
     def resizeImageFrameObj(self, obj):
@@ -478,8 +485,8 @@ class Letters(object):
         N = self.nbPlayers * nbLinesLetters
 
         # change color for player
-        colors = [self.defaultColor, self.color1, self.color2, self.color3]
-        colorLen = 4
+        colors = [self.defaultColor, self.color1, self.color2, self.color3, self.color4, self.color5]
+        colorLen = 6
         currentcolorIdx = 0
 
         objsList = []
@@ -531,6 +538,8 @@ class Letters(object):
                 objsList = []
 
             # next color for next player except if new line
+            #scribus.messageBox("DEBUG", f"next color for next player n={n} nbBlocksPerLine={nbBlocksPerLine}")
+
             if n!=1 or nbBlocksPerLine==1 :
                 currentcolorIdx+=1
                 if currentcolorIdx >= colorLen :
