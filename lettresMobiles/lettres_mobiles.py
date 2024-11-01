@@ -94,12 +94,15 @@ class Letters(object):
 
         # character styles
         self.cStyleWordRef = "char_style_word_ref"
+        self.cStyleWordRefSmall = "char_style_word_ref_small"
         self.cStyleLetterUpper = "char_style_letter_upper"
         self.cStyleLetterLower = "char_style_letter_lower"
         self.cStyleLetterScript = "char_style_letter_script"
         self.cStyleLetterSymbols = "char_style_letter_symbols"
         # paragraph styles
         self.pStyleWordRef = "char_style_word_ref"
+        self.pStyleWordRefSmall = "char_style_word_ref_small"
+        self.pStyleWordRefWidth = "char_style_word_ref_width"
         self.pStyleLetterUpper = "char_style_letter_upper"
         self.pStyleLetterLower = "char_style_letter_lower"
         self.pStyleLetterScript = "char_style_letter_script"
@@ -147,13 +150,17 @@ class Letters(object):
         self.pointToMillimeter = 0.352777778
 
         self.cFontRef = loadFont(self.cStyleWordRef, self.cFontRef, 18.0)
+        self.cFontRefSmall = loadFont(self.cStyleWordRefSmall, self.cFontRef, 14.0)
         self.cFont = loadFont(self.cStyleLetterUpper, self.cFont, 22.0)
         self.cFont = loadFont(self.cStyleLetterLower, self.cFont, 22.0)
-        self.cFontRef = loadFont(self.cStyleLetterScript, self.cFontScript, 14.0)
+        self.cFontScript = loadFont(self.cStyleLetterScript, self.cFontScript, 14.0)
         self.cFontSymbols = loadFont(self.cStyleLetterSymbols, self.cFontSymbols, 18.0)
 
 
         scribus.createParagraphStyle(name=self.pStyleWordRef,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleWordRef)
+        scribus.createParagraphStyle(name=self.pStyleWordRefSmall,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleWordRefSmall)
+        scribus.createParagraphStyle(name=self.pStyleWordRefWidth,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_LEFT, charstyle=self.cStyleWordRef)
+
         scribus.createParagraphStyle(name=self.pStyleLetterUpper,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleLetterUpper)
         scribus.createParagraphStyle(name=self.pStyleLetterLower,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleLetterLower)
         scribus.createParagraphStyle(name=self.pStyleLetterScript,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleLetterScript)
@@ -289,13 +296,21 @@ class Letters(object):
         objectlist=[]
         rect = scribus.createRect(x, y, imgWidth+tableWidth, tableHeight)
         objectlist.append(rect)
+        textBlockWidth = imgWidth
+        paraphStyle = self.pStyleWordRef
+        if isCompact == False :
+            textBlockWidth = tableWidth+imgWidth
+            paraphStyle = self.pStyleWordRefWidth
+        elif wordLen>=10 :
+            paraphStyle= self.pStyleWordRefSmall
+
 
         textbox = self.createText( x=x,
                                   y=wordPosY,
-                                  width=imgWidth,
+                                  width=textBlockWidth,
                                   height=self.letterCellHeight,
                                   text=dataRow[self.indexWord][self.indexWord].upper(),
-                                  paragraphStyle=self.pStyleWordRef,
+                                  paragraphStyle=paraphStyle,
                                   color=self.defaultColor,
                                   isVerticalAlign=True)
         objectlist.append(textbox)
@@ -410,7 +425,7 @@ class Letters(object):
             while run :
                 nbBlocksPerLine = nbBlocksPerLine+1
                 nbCols = math.floor(maxWidthSpace/nbBlocksPerLine/self.letterCellWidth)
-                nbRows = math.ceil(wordsLen/nbCols)
+                nbRows = max(1,math.ceil(wordsLen/nbCols))
 
                 nbBlocksLines = math.ceil(N/nbBlocksPerLine)
                 height = self.letterCellHeight*nbRows*nbBlocksLines
@@ -504,6 +519,7 @@ class Letters(object):
         for p in range(self.nbPlayers) :
             for m in range(nbLinesLetters) :
                 # new page if not enought space for next block of letters
+                # scribus.messageBox("DEBUG", f"check new page label={label} maxHeightSpaces={maxHeightSpaces} yOffset={yOffset} blockHeight={blockHeight} test={maxHeightSpaces < yOffset+ blockHeight} n={n} N={N}")
                 if maxHeightSpaces < yOffset+ blockHeight :
                     #scribus.messageBox("DEBUG", f"add page 1 label={label} nbBlocksPerLine={nbBlocksPerLine} maxHeightSpaces={maxHeightSpaces} yOffset={yOffset} blockHeight={blockHeight} ")
                     scribus.newPage(-1)
@@ -531,8 +547,12 @@ class Letters(object):
                     xOffset = self.marginStart
                     yOffset += blockHeight
                 else :
-                    xOffset += blockWidth
-                    n+=1
+                    if p==self.nbPlayers-1 and m==nbLinesLetters-1 : #end of loop, force to start new line block
+                        xOffset = self.marginStart
+                        yOffset += blockHeight
+                    else :
+                        xOffset += blockWidth
+                        n+=1
 
                 scribus.groupObjects(objsList)
                 objsList = []
@@ -540,10 +560,10 @@ class Letters(object):
             # next color for next player except if new line
             #scribus.messageBox("DEBUG", f"next color for next player n={n} nbBlocksPerLine={nbBlocksPerLine}")
 
-            if n!=1 or nbBlocksPerLine==1 :
-                currentcolorIdx+=1
-                if currentcolorIdx >= colorLen :
-                    currentcolorIdx = 0
+            #if n!=1 or nbBlocksPerLine==1 :
+            currentcolorIdx+=1
+            if currentcolorIdx >= colorLen :
+                currentcolorIdx = 0
 
         return yOffset
 
