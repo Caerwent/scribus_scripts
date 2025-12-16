@@ -88,8 +88,8 @@ class ImagierScribus(object):
             sys.exit(1)
 
         self.cardsize = scribus.getSize(self.cardName)
-        self.marginTop, self.marginStart, self.marginEnd, self.marginBottom = scribus.getPageMargins()
-        self.pageWidth, self.pageHeight = scribus.getPageSize()
+        self.marginTop, self.marginStart, self.marginEnd, self.marginBottom = scribus.getPageNMargins(self.currentPage)
+        self.pageWidth, self.pageHeight = scribus.getPageNSize(self.currentPage)
 
     def initFromCardModel(self) :
         scribus.deselectAll()
