@@ -117,19 +117,28 @@ class ImagierScribus(object):
                 result = re.search('%VAR_(.*?)%', filename)
                 if result != None :
                     imageHeader =result.group(1)
+                    if imageHeader not in self.headers :
+                        self.headers.append(imageHeader)
+
         objName=scribus.groupObjects()
         scribus.deleteObject(objName)
         scribus.deselectAll()
         if imageHeader==None :
             scribus.messageBox('Warning', 'No image template found in model')
-        else :
-            self.headers.append(imageHeader)
+
+
+
 
     def checkHeader(self, headers) :
+        orderedHeaders=[]
         for header in self.headers :
             if header not in headers :
                 scribus.messageBox('Error', f"Header {header} from CSV file is not found in model card {self.headers}")
                 sys.exit(1)
+        for header in headers :
+            if header in self.headers :
+                orderedHeaders.append(header)
+        self.headers=orderedHeaders
 
     def resizeImageFrameObj(self, obj):
         frameW, frameH = scribus.getSize(obj)
