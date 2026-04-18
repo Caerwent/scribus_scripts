@@ -50,7 +50,7 @@ Le script demande si l'alphabet breton doit être géré. Dans ce cas, les chaî
 ![Modèle de carte au format Scribus](doc/dialog_bzh.png)
 
 Ensuite le script demande à choisir le mode, qui correspond à un niveau de maternelle :
- - 1 : mot sous l'image + une ligne écriture + ligne collage capitales
+ - 1 : mot sous l'image + une ligne écriture + ligne collage capitales (hauteur des lettres plus importantes pour faciliter la manipulation)
  - 2 : mot sous l'image + une ligne écriture + ligne collage capitales + ligne collage minuscules
  - 3 : mot sous l'image + une ligne écriture + ligne collage minuscules + ligne collage cursif
 

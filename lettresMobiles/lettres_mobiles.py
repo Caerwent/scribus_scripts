@@ -81,7 +81,9 @@ class Letters(object):
         scribus.gotoPage(self.currentPage)
 
         self.letterCellWidth = 15
+        self.letterCellHeightNormal = 12
         self.letterCellHeight = 12
+        self.letterCellHeightBig = 18
         self.charScissors = u"\u2702" #"✂"
         self.charPencil = u"\u270e" #"🖉"
         self.hasScript = False
@@ -96,6 +98,7 @@ class Letters(object):
         self.cStyleWordRef = "char_style_word_ref"
         self.cStyleWordRefSmall = "char_style_word_ref_small"
         self.cStyleLetterUpper = "char_style_letter_upper"
+        self.cStyleLetterUpperBig = "char_style_letter_upper_big"
         self.cStyleLetterLower = "char_style_letter_lower"
         self.cStyleLetterScript = "char_style_letter_script"
         self.cStyleLetterSymbols = "char_style_letter_symbols"
@@ -104,6 +107,7 @@ class Letters(object):
         self.pStyleWordRefSmall = "char_style_word_ref_small"
         self.pStyleWordRefWidth = "char_style_word_ref_width"
         self.pStyleLetterUpper = "char_style_letter_upper"
+        self.pStyleLetterUpperBig = "char_style_letter_upper_big"
         self.pStyleLetterLower = "char_style_letter_lower"
         self.pStyleLetterScript = "char_style_letter_script"
         self.pStyleLetterSymbols = "char_style_letter_symbols"
@@ -152,6 +156,7 @@ class Letters(object):
         self.cFontRef = loadFont(self.cStyleWordRef, self.cFontRef, 18.0)
         self.cFontRefSmall = loadFont(self.cStyleWordRefSmall, self.cFontRef, 14.0)
         self.cFont = loadFont(self.cStyleLetterUpper, self.cFont, 22.0)
+        self.cFont = loadFont(self.cStyleLetterUpperBig, self.cFont, 24.0)
         self.cFont = loadFont(self.cStyleLetterLower, self.cFont, 22.0)
         self.cFontScript = loadFont(self.cStyleLetterScript, self.cFontScript, 14.0)
         self.cFontSymbols = loadFont(self.cStyleLetterSymbols, self.cFontSymbols, 18.0)
@@ -162,6 +167,7 @@ class Letters(object):
         scribus.createParagraphStyle(name=self.pStyleWordRefWidth,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_LEFT, charstyle=self.cStyleWordRef)
 
         scribus.createParagraphStyle(name=self.pStyleLetterUpper,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleLetterUpper)
+        scribus.createParagraphStyle(name=self.pStyleLetterUpperBig,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleLetterUpperBig)
         scribus.createParagraphStyle(name=self.pStyleLetterLower,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleLetterLower)
         scribus.createParagraphStyle(name=self.pStyleLetterScript,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleLetterScript)
         scribus.createParagraphStyle(name=self.pStyleLetterSymbols,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleLetterSymbols)
@@ -482,7 +488,7 @@ class Letters(object):
 
 
         xOffset = self.marginStart
-        paragraphStyles = [self.pStyleLetterUpper] # array of style for letters, it follows mode
+        paragraphStyles = [self.pStyleLetterUpperBig] # array of style for letters, it follows mode
         # 1 : mot sous l'image + tableau ligne écriture, ligne collage capitales
         # 2 : mot sous l'image + tableau ligne écriture, ligne collage capitales et minuscules
         # 3 : mot sous l'image + tableau ligne écriture, ligne collage minuscules et cursif
@@ -692,6 +698,10 @@ class Letters(object):
             scribus.messageBox('Error', "Nombre d'élèves invalide")
             sys.exit(1)
 
+        if self.mode==1 :
+            self.letterCellHeight = self.letterCellHeightBig
+        else :
+            self.letterCellHeight = self.letterCellHeightNormal
         perPageDataList = []
         currentPageDataList = []
         currentDataPage = -1
