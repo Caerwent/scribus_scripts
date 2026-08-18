@@ -88,8 +88,11 @@ class ImagierScribus(object):
             sys.exit(1)
 
         self.cardsize = scribus.getSize(self.cardName)
+        masterPages = scribus.masterPageNames()
+        self.hasEvenOddMargins = ("odd_page" in masterPages) and ("even_page" in masterPages)
         self.marginTop, self.marginStart, self.marginEnd, self.marginBottom = scribus.getPageNMargins(self.currentPage)
         self.pageWidth, self.pageHeight = scribus.getPageNSize(self.currentPage)
+
 
     def initFromCardModel(self) :
         scribus.deselectAll()
@@ -205,27 +208,35 @@ class ImagierScribus(object):
         scribus.progressReset()
         scribus.progressTotal(len(data))
         i=1
-        x=self.marginStart
-        y=self.marginTop
+        x,y = scribus.getPosition(self.cardName)
 
         for dataItem in data :
             scribus.progressSet(i)
             i+=1
             #scribus.messageBox("error", f" createCardsList x={x} y={y} w={self.cardsize[0]} h={self.cardsize[1]} maxX={self.pageWidth-self.marginEnd} maxY={self.pageHeight-self.marginBottom}")
             if y+self.cardsize[1] > self.pageHeight-self.marginBottom :
-                x= self.marginStart
-                y=self.marginTop
-                scribus.newPage(-1)
+
                 self.currentPage=self.currentPage+1
+                if self.hasEvenOddMargins :
+                    if self.currentPage % 2:
+                        scribus.newPage(-1, "odd_page")
+                    else:
+                        scribus.newPage(-1, "even_page")
+                else :
+                    scribus.newPage(-1)
+
                 scribus.gotoPage(self.currentPage)
+                self.marginTop, self.marginStart, self.marginEnd, self.marginBottom = scribus.getPageNMargins(self.currentPage)
+                x=self.marginStart
+                y=self.marginTop
 
             self.createCard( dataItem, x, y)
 
             if x+2*self.cardsize[0] <= self.pageWidth-self.marginEnd :
                 x+=self.cardsize[0]
             else :
-                x= self.marginStart
-                y += self.cardsize[1]
+                x=self.marginStart
+                y+=self.cardsize[1]
 
         scribus.progressReset()
         scribus.deleteObject(self.cardName)

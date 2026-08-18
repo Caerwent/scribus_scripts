@@ -45,6 +45,7 @@ Le fichier ainsi créé contient toutes les données dans la langue cible (à co
 
 Pour la création de cartes, le script demande le fichier CSV à charger.
 Le modèle est copié puis placé en priorité de façon à remplir la page horizontalement. S'il n'y a pas assez de place sur la ligne, le script place la nouvelle carte sous la ligne actuelle et s'il n'y a pas assez de place verticalement sur la page, une nouvelle page est commencée.
+La première carte est positionnée à l'emplacement du modèle. Si les gabaris nommés "page_even" et "page_odd" sont trouvés dans le fichier, il sont utilisés pour gérer les marges des pages paires et impaires.
 
  ![Modèle de carte au format Scribus](doc/result.png)
 
