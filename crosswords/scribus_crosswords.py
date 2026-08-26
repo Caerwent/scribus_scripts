@@ -44,16 +44,19 @@ class GridCreator(object):
         self.wordlist = wordlist
         self.empty = empty
         # character styles
+        self.cStyleCell = "char_style_cell"
         self.cStyleIndex = "char_style_index"
         self.cStyleWord = "char_style_word"
         self.cStyleWordIndex = "char_style_wordIndex"
         self.cStyleWordTitle = "char_style_wordTitle"
         # paragraph styles
+        self.pStyleCell = "par_style_cell"
         self.pStyleIndex = "par_style_index"
         self.pStyleWord = "par_style_word"
         self.pStyleWordTitle = "par_style_wordTitle"
         self.pStyleWordIndex = "par_style_wordIndex"
 
+        self.cFontCell = "Script Ecole 2 Regular"
         self.cFont = "Arial Bold"
         self.cFontWord = "Arial Bold"
 
@@ -62,10 +65,12 @@ class GridCreator(object):
         self.imagePath = None
         self.pointToMillimeter = 0.352777778
 
+        self.cFontCell = loadFont(self.cStyleCell, self.cFontCell, 14.0)
         self.cFont = loadFont(self.cStyleIndex, self.cFont, 18.0)
         self.cFont = loadFont(self.cStyleWordIndex, self.cFont, 14.0)
         self.cFont = loadFont(self.cStyleWordTitle, self.cFont, 24.0)
 
+        scribus.createParagraphStyle(name=self.pStyleCell,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleCell)
         scribus.createParagraphStyle(name=self.pStyleIndex,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleIndex)
         scribus.createParagraphStyle(name=self.pStyleWordTitle,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleWordTitle)
         scribus.createParagraphStyle(name=self.pStyleWordIndex,  linespacingmode=1,linespacing=0,alignment=scribus.ALIGN_CENTERED, charstyle=self.cStyleWordIndex)
@@ -175,10 +180,10 @@ class GridCreator(object):
 
     def addWordsList(self, startY, wordsList, isHorizontal) :
         y=startY
-        wordMargin = 10
+        wordMargin = 5
         marginH, marginL, marginR, marginB = scribus.getPageMargins()
         pageWidth, pageHeight = scribus.getPageSize()
-        wordWidth = (pageWidth-marginR-marginL)/2-wordMargin
+        wordWidth = (pageWidth-marginR-marginL-wordMargin)/2
         isLeft = True
         direction = 0 if isHorizontal else 1
         #filteredWords = filter(lambda word: word[calculate.IDX_DIR]==direction, wordsList)
@@ -192,7 +197,7 @@ class GridCreator(object):
             scribus.progressSet(i)
             i+=1
             fheight = self.createWordView(
-                int(marginL) if isLeft else int(marginL)+wordWidth+wordMargin,
+                int(marginL) if isLeft else (int(marginL)+wordWidth+wordMargin),
                 int(y),
                 wordWidth,
                 word[calculate.IDX_WORD_ORIG],
@@ -204,7 +209,7 @@ class GridCreator(object):
             if isLeft:
                 y += fheight+wordMargin
         scribus.progressReset()
-        return y
+        return y+fheight
 
     def draw_cell_waves(self, group, lineCount, x, y, width, height) :
         yOffset = height/(lineCount+1)
@@ -286,7 +291,7 @@ class GridCreator(object):
             scribus.setTextColor(self.colorV, textbox)
             scribus.deselectAll()
             scribus.selectObject(textbox)
-            scribus.setParagraphStyle(self.pStyleIndex, textbox)
+            scribus.setParagraphStyle(self.pStyleCell, textbox)
             scribus.setTextVerticalAlignment(scribus.ALIGNV_CENTERED,textbox)
             scribus.deselectAll()
 
@@ -304,7 +309,7 @@ class GridCreator(object):
             scribus.setTextColor(self.colorH, textbox)
             scribus.deselectAll()
             scribus.selectObject(textbox)
-            scribus.setParagraphStyle(self.pStyleIndex, textbox)
+            scribus.setParagraphStyle(self.pStyleCell, textbox)
             scribus.setTextVerticalAlignment(scribus.ALIGNV_CENTERED,textbox)
             scribus.deselectAll()
         scribus.groupObjects(objectlist)
@@ -347,9 +352,13 @@ class GridCreator(object):
         currentPage=currentPage+1
         scribus.gotoPage(currentPage)
 
+        scribus.docChanged(1)
+        scribus.setRedraw(True)
+        scribus.redrawAll()
 
-        textbox=scribus.createText(marginL, marginH, pageWidth-marginL-marginR, 10)
-
+        yOffset = marginH
+        textbox=scribus.createText(marginL, yOffset, pageWidth-marginL-marginR, 10)
+        yOffset += 10
         scribus.setText( "A-BLAEN →" if self.isBZH else "HORIZONTALEMENT →", textbox)
         scribus.setTextColor(self.colorH, textbox)
         scribus.deselectAll()
@@ -357,9 +366,11 @@ class GridCreator(object):
         scribus.setParagraphStyle(self.pStyleWordTitle, textbox)
         scribus.setTextVerticalAlignment(scribus.ALIGNV_CENTERED,textbox)
         scribus.deselectAll()
-
-        y=self.addWordsList(marginH+15, self.wordlist, True)
-        textbox=scribus.createText(marginL, marginH+y+15, pageWidth-marginL-marginR, 10)
+        yOffset+= 5 # space
+        yOffset=self.addWordsList(yOffset, self.wordlist, True)
+        yOffset+=5 # space
+        textbox=scribus.createText(marginL, yOffset, pageWidth-marginL-marginR, 10)
+        yOffset += 10
         scribus.setText("A-BLOM ↓" if self.isBZH else "VERTICALEMENT ↓" , textbox)
         scribus.setTextColor(self.colorV, textbox)
         scribus.deselectAll()
@@ -367,7 +378,8 @@ class GridCreator(object):
         scribus.setParagraphStyle(self.pStyleWordTitle, textbox)
         scribus.setTextVerticalAlignment(scribus.ALIGNV_CENTERED,textbox)
         scribus.deselectAll()
-        self.addWordsList(marginH+y+15+10+15, self.wordlist, False)
+        yOffset += 5 # space
+        self.addWordsList(yOffset, self.wordlist, False)
 
 
 
