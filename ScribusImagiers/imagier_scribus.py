@@ -12,7 +12,7 @@ class CsvCreator(object):
     def __init__(self):
         self.imagePath = ""
         self.targetCsvFile = None
-        self.validImages = [".jpg",".gif",".png",".tga"]
+        self.validImages = [".jpg",".gif",".png",".tga", ".webp"]
         self.imagesFiles = []
 
 
