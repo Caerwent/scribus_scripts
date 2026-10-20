@@ -283,7 +283,7 @@ class GridCreator(object):
         scribus.progressTotal(self.cols+1)
         scribus.progressReset()
         objectlist=[]
-        """
+
         for i in range(self.cols):
             scribus.progressSet(i+1)
             textbox=scribus.createText((i+1)*xStep+x, y, xStep, yStep)
@@ -299,10 +299,10 @@ class GridCreator(object):
         scribus.groupObjects(objectlist)
 
         objectlist=[]
-        """
+
         scribus.progressReset()
         scribus.progressTotal(self.rows+1)
-        """
+
         for i in range(self.rows):
             scribus.progressSet(i+1)
             textbox=scribus.createText(x, (i+1)*yStep+y, xStep, yStep)
@@ -315,12 +315,12 @@ class GridCreator(object):
             scribus.setTextVerticalAlignment(scribus.ALIGNV_CENTERED,textbox)
             scribus.deselectAll()
         scribus.groupObjects(objectlist)
-        """
+
         objectlist=[]
         scribus.progressReset()
         scribus.progressTotal(self.rows*self.cols+1)
         i=1
-        """
+
         for r in range(self.rows):
             for c in range(self.cols):
                 scribus.progressSet(i)
@@ -331,11 +331,11 @@ class GridCreator(object):
                     else :
                         self.draw_cell_hashes(objectlist, (c+1)*xStep+x, (r+1)*yStep+y, xStep, yStep)
         scribus.groupObjects(objectlist)
-        """
+
         objectlist=[]
         scribus.progressReset()
         scribus.progressTotal(self.cols+1)
-        """
+
         for c in range(self.cols+1):
             scribus.progressSet(c+1)
             line = scribus.createLine((c+1)*xStep+x,y+yStep,(c+1)*xStep+x,maxY)
@@ -351,7 +351,7 @@ class GridCreator(object):
             objectlist.append(line)
         scribus.progressReset()
         scribus.groupObjects(objectlist)
-        """
+
         scribus.newPage(-1)
         currentPage=currentPage+1
         scribus.gotoPage(currentPage)
