@@ -9,7 +9,6 @@ from control import Genxword
 from calculate import Crossword
 
 Letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U" ,"V", "W", "X", "Y", "Z" ]
-currentPage=1
 
 
 def inputOksol(text):
@@ -43,6 +42,14 @@ class GridCreator(object):
         self.grid = grid
         self.wordlist = wordlist
         self.empty = empty
+
+        self.currentPage = 1
+        scribus.gotoPage(self.currentPage)
+        self.pageWidth, self.pageHeight = scribus.getPageSize()
+        self.marginH, self.marginL, self.marginR, self.marginB = scribus.getPageNMargins(self.currentPage )
+        self.modelTopOffset = self.getModelTopOffset()
+
+
         # character styles
         self.cStyleCell = "char_style_cell"
         self.cStyleIndex = "char_style_index"
@@ -179,26 +186,37 @@ class GridCreator(object):
         scribus.groupObjects(objectlist)
         return height
 
+    def check_for_new_page(self, currentY, nextHeight) :
+        if currentY + nextHeight > self.pageHeight-self.marginB :
+            scribus.newPage(-1)
+            self.currentPage+=1
+            scribus.gotoPage(self.currentPage)
+            self.marginH, self.marginL, self.marginR, self.marginB = scribus.getPageNMargins(self.currentPage)
+            return self.marginH
+        return currentY
+
+
+
     def addWordsList(self, startY, wordsList, isHorizontal) :
         y=startY
-        wordMargin = 5
-        marginH, marginL, marginR, marginB = scribus.getPageMargins()
-        pageWidth, pageHeight = scribus.getPageSize()
-        wordWidth = (pageWidth-marginR-marginL-wordMargin)/2
+        wordMargin = 2
+        wordWidth = (self.pageWidth-self.marginR-self.marginL-wordMargin)/2
         isLeft = True
         direction = 0 if isHorizontal else 1
         #filteredWords = filter(lambda word: word[calculate.IDX_DIR]==direction, wordsList)
         filteredWords = [ word for word in wordsList if word[calculate.IDX_DIR]==direction ]
         #random.shuffle(filteredWords)
 
+
+        i=0
+        nbWords = len(filteredWords)
         scribus.progressReset()
-        scribus.progressTotal(len(filteredWords))
-        i=1
+        scribus.progressTotal(nbWords)
         for word in filteredWords:
             scribus.progressSet(i)
             i+=1
             fheight = self.createWordView(
-                int(marginL) if isLeft else (int(marginL)+wordWidth+wordMargin),
+                int(self.marginL) if isLeft else (int(self.marginL)+wordWidth+wordMargin),
                 int(y),
                 wordWidth,
                 word[calculate.IDX_WORD_ORIG],
@@ -206,11 +224,18 @@ class GridCreator(object):
                 word[calculate.IDX_COL],
                 word[calculate.IDX_DIR],
                 word[calculate.IDX_IMG])
-            isLeft = not isLeft
-            if isLeft:
+
+            if not isLeft:
                 y += fheight+wordMargin
+                if i<nbWords:
+                    y = self.check_for_new_page(y, fheight)
+            isLeft = not isLeft
+
         scribus.progressReset()
-        return y+fheight
+        if not isLeft:
+            return y+fheight
+        else :
+            return y
 
     def draw_cell_waves(self, group, lineCount, x, y, width, height) :
         yOffset = height/(lineCount+1)
@@ -257,23 +282,16 @@ class GridCreator(object):
             scribus.setLineColor("Black", line)
             group.append(line)
 
+
     def draw_grid(self, color="Black"):
         global Letters
-        global currentPage
 
-        pageWidth, pageHeight = scribus.getPageSize()
-        marginH, marginL, marginR, marginB = scribus.getPageMargins()
-        modelTopOffset = self.getModelTopOffset()
+        firstMarginH = self.marginH + self.modelTopOffset
+        x = int(self.marginL)
+        y = int(firstMarginH)
 
-        gridMarginH = marginH
-        if modelTopOffset!= 0 :
-            gridMarginH = modelTopOffset
-
-        x = int(marginL)
-        y = int(gridMarginH)
-
-        xStep = int( (pageWidth -marginR -marginL) / (self.cols+1))
-        yStep = int( (pageHeight - marginB - gridMarginH) / (self.rows+1))
+        xStep = int( (self.pageWidth -self.marginR -self.marginL) / (self.cols+1))
+        yStep = int( (self.pageHeight - self.marginB - firstMarginH) / (self.rows+1))
         maxX = x+(self.cols+1)*xStep
         if yStep > xStep:
             yStep = xStep
@@ -353,15 +371,15 @@ class GridCreator(object):
         scribus.groupObjects(objectlist)
 
         scribus.newPage(-1)
-        currentPage=currentPage+1
-        scribus.gotoPage(currentPage)
+        self.currentPage+=1
+        scribus.gotoPage(self.currentPage)
 
         scribus.docChanged(1)
         scribus.setRedraw(True)
         scribus.redrawAll()
 
-        yOffset = marginH
-        textbox=scribus.createText(marginL, yOffset, pageWidth-marginL-marginR, 10)
+        yOffset = self.marginH
+        textbox=scribus.createText(self.marginL, yOffset, self.pageWidth-self.marginL-self.marginR, 10)
         yOffset += 10
         scribus.setText( "A-BLAEN →" if self.isBZH else "HORIZONTALEMENT →", textbox)
         scribus.setTextColor(self.colorH, textbox)
@@ -373,7 +391,8 @@ class GridCreator(object):
         yOffset+= 5 # space
         yOffset=self.addWordsList(yOffset, self.wordlist, True)
         yOffset+=5 # space
-        textbox=scribus.createText(marginL, yOffset, pageWidth-marginL-marginR, 10)
+        yOffset = self.check_for_new_page(yOffset, 10)
+        textbox=scribus.createText(self.marginL, yOffset, self.pageWidth-self.marginL-self.marginR, 10)
         yOffset += 10
         scribus.setText("A-BLOM ↓" if self.isBZH else "VERTICALEMENT ↓" , textbox)
         scribus.setTextColor(self.colorV, textbox)
@@ -428,8 +447,6 @@ if scribus.haveDoc():
     #scribus.createCharStyle("wordchar", "DejaVu Sans Condensed Bold", 14.0,'','Black',1.0,'',0,0,0,0,0,0,0,0,0,1,1,-50)
     #scribus.createParagraphStyle(WORD_STYLE,1,7.0,1,0,0,0,0,0,0,0,0,"wordchar")
 
-    currentPage=1
-    scribus.gotoPage(currentPage)
 
     if(processCrosswords()) :
         scribus.docChanged(1)
