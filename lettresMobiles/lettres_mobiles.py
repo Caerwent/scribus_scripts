@@ -724,7 +724,7 @@ class Letters(object):
             currentPageDataList.append(data)
         scribus.progressReset()
         perPageDataList.append(currentPageDataList)
-        perPageDataList.sort(key=lambda element: element[0][self.indexPage])
+        perPageDataList.sort(key=lambda element: int(element[0][self.indexPage]))
 
         scribus.progressReset()
         scribus.progressTotal(len(perPageDataList ))
